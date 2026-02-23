@@ -1,0 +1,264 @@
+<Window x:Class="MagDbPatcher.AdminWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Admin Tools"
+        Width="1200"
+        Height="820"
+        MinWidth="1080"
+        MinHeight="700"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BgPrimary}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="Admin Tools" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                <TextBlock Text="Folder-first patch maintenance for future and older patch sets." FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Patches Folder" Style="{StaticResource SectionHeaderText}"/>
+                <TextBox x:Name="txtActivePatchesFolder" Grid.Row="1" IsReadOnly="True" FontSize="12" Margin="0,8,0,0"/>
+                <WrapPanel Grid.Row="2" Margin="0,10,0,0">
+                    <Button x:Name="btnChangeCatalogFolder" Content="Change" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="72" Click="BtnChangeCatalogFolder_Click"/>
+                    <Button x:Name="btnResetCatalogFolder" Content="Reset" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="72" Click="BtnResetCatalogFolder_Click"/>
+                    <Button x:Name="btnOpenCatalogFolder" Content="Open" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="72" Click="BtnOpenCatalogFolder_Click"/>
+                    <Button x:Name="btnValidateCatalog" Content="Validate" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="78" Click="BtnValidateCatalog_Click"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <TabControl Grid.Row="2" Background="Transparent" BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+            <TabItem Header="Patch Library">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnScanCatalog" Content="Scan Patches Folder" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" Click="BtnScanCatalog_Click"/>
+                        <Button x:Name="btnCreateMissingLinks" Content="Create Missing Links" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" Click="BtnCreateMissingLinks_Click"/>
+                        <Button x:Name="btnApplyCatalog" Content="Apply Changes" Style="{StaticResource BtnPrimary}" Click="BtnApplyCatalog_Click"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="3*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="Detected Versions" Style="{StaticResource SectionHeaderText}"/>
+                                <ListBox x:Name="lstLibraryVersions"
+                                         Grid.Row="1"
+                                         Margin="0,10,0,0"
+                                         DisplayMemberPath="Display"
+                                         BorderBrush="{StaticResource BorderColor}"
+                                         BorderThickness="1"
+                                         Background="{StaticResource BgSecondary}"
+                                         SelectionChanged="LstLibraryVersions_SelectionChanged"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0,0,10,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="Scripts In Selected Version" Style="{StaticResource SectionHeaderText}"/>
+                                <ListBox x:Name="lstLibraryScripts"
+                                         Grid.Row="1"
+                                         Margin="0,10,0,0"
+                                         FontFamily="Consolas"
+                                         FontSize="12"
+                                         BorderBrush="{StaticResource BorderColor}"
+                                         BorderThickness="1"
+                                         Background="{StaticResource BgSecondary}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Staged Patch Links" Style="{StaticResource SectionHeaderText}"/>
+
+                                <Grid Grid.Row="1" Margin="0,10,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="cmbLinkFrom" Grid.Column="0" DisplayMemberPath="Name" Style="{StaticResource DarkComboBox}" FontSize="12"/>
+                                    <ComboBox x:Name="cmbLinkTo" Grid.Column="1" DisplayMemberPath="Name" Style="{StaticResource DarkComboBox}" FontSize="12" Margin="8,0,0,0"/>
+                                    <Button x:Name="btnAddManualLink" Grid.Column="2" Content="+ Stage Link" Style="{StaticResource BtnSecondary}" Margin="8,0,0,0" Click="BtnAddManualLink_Click"/>
+                                </Grid>
+
+                                <ListBox x:Name="lstLibraryLinks"
+                                         Grid.Row="2"
+                                         DisplayMemberPath="Display"
+                                         BorderBrush="{StaticResource BorderColor}"
+                                         BorderThickness="1"
+                                         Background="{StaticResource BgSecondary}"
+                                         SelectionChanged="LstLibraryLinks_SelectionChanged"/>
+
+                                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button x:Name="btnRemoveStagedLink" Content="Remove Selected" Style="{StaticResource BtnDanger}" IsEnabled="False" Click="BtnRemoveStagedLink_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <TextBlock x:Name="txtPatchCatalogSummary" Grid.Row="2" Margin="0,10,0,0" TextWrapping="Wrap" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                    <TextBlock x:Name="txtPatchCatalogValidation" Grid.Row="3" Margin="0,6,0,0" TextWrapping="Wrap" Foreground="{StaticResource TextMuted}" FontSize="12"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Advanced Versions">
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Versions" Style="{StaticResource SectionHeaderText}"/>
+
+                            <ListBox x:Name="lstVersions"
+                                     Grid.Row="1"
+                                     Margin="0,12,0,12"
+                                     BorderBrush="{StaticResource BorderColor}"
+                                     BorderThickness="1"
+                                     Background="{StaticResource BgSecondary}"
+                                     DisplayMemberPath="Display"
+                                     SelectionChanged="LstVersions_SelectionChanged"/>
+
+                            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                <Button x:Name="btnAddVersion" Content="+ Add Version" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" Click="BtnAddVersion_Click"/>
+                                <Button x:Name="btnEditVersion" Content="Edit" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" IsEnabled="False" Click="BtnEditVersion_Click"/>
+                                <Button x:Name="btnDeleteVersion" Content="Delete" Style="{StaticResource BtnDanger}" IsEnabled="False" Click="BtnDeleteVersion_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Scripts In Selected Version" Style="{StaticResource SectionHeaderText}"/>
+
+                            <ListBox x:Name="lstScripts"
+                                     Grid.Row="1"
+                                     Margin="0,12,0,12"
+                                     BorderBrush="{StaticResource BorderColor}"
+                                     BorderThickness="1"
+                                     Background="{StaticResource BgSecondary}"
+                                     FontFamily="Consolas"
+                                     FontSize="12"
+                                     SelectionChanged="LstScripts_SelectionChanged"/>
+
+                            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                <Button x:Name="btnAddScript" Content="+ Add Script" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" IsEnabled="False" Click="BtnAddScript_Click"/>
+                                <Button x:Name="btnRemoveScript" Content="Remove Script" Style="{StaticResource BtnDanger}" IsEnabled="False" Click="BtnRemoveScript_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Advanced Patches">
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Patch Definitions" Style="{StaticResource SectionHeaderText}"/>
+
+                            <ListBox x:Name="lstPatches"
+                                     Grid.Row="1"
+                                     Margin="0,12,0,12"
+                                     BorderBrush="{StaticResource BorderColor}"
+                                     BorderThickness="1"
+                                     Background="{StaticResource BgSecondary}"
+                                     DisplayMemberPath="Display"
+                                     SelectionChanged="LstPatches_SelectionChanged"/>
+
+                            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                <Button x:Name="btnAddPatch" Content="+ Add Patch" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" Click="BtnAddPatch_Click"/>
+                                <Button x:Name="btnEditPatch" Content="Edit" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" IsEnabled="False" Click="BtnEditPatch_Click"/>
+                                <Button x:Name="btnDeletePatch" Content="Delete" Style="{StaticResource BtnDanger}" IsEnabled="False" Click="BtnDeletePatch_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Scripts In Selected Patch" Style="{StaticResource SectionHeaderText}"/>
+
+                            <ListBox x:Name="lstPatchScripts"
+                                     Grid.Row="1"
+                                     Margin="0,12,0,0"
+                                     BorderBrush="{StaticResource BorderColor}"
+                                     BorderThickness="1"
+                                     Background="{StaticResource BgSecondary}"
+                                     FontFamily="Consolas"
+                                     FontSize="12"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

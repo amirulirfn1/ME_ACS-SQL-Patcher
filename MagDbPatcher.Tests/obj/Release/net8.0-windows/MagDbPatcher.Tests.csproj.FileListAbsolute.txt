@@ -1,0 +1,349 @@
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\.msCoverageSourceRootsMapping_MagDbPatcher.Tests
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\testhost.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\5.3.3\Update_5_3_2.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\5.3.3\Update_5_3_3_20181016.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\5.3.3\Upgrade5_2_1.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.0\Update_MagEtegra_6_0_ from_5_3_3.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.1\Script_6_1_Final.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.2\6_2_20210324_1349.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.3\6_3_0_Final.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.5\6_4_0_20220419.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.5\MagEtegra_6_X_20230112.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.0\ME_7_0_0_0.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.1\7_2_1.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251117\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251117\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251205\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251205\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251231\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251231\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20260123\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20260123\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2\ME_7_2_0.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\versions.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\testhost.exe
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.runner.visualstudio.testadapter.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.runner.reporters.netcoreapp10.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.runner.utility.netcoreapp10.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.deps.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.runtimeconfig.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.pdb
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Azure.Core.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Azure.Identity.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.VisualStudio.CodeCoverage.Shim.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Data.SqlClient.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Options.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Primitives.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Identity.Client.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Logging.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Protocols.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Tokens.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.SqlServer.Server.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.CoreUtilities.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.PlatformAbstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.CommunicationUtilities.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.CrossPlatEngine.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.Utilities.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.VisualStudio.TestPlatform.Common.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Newtonsoft.Json.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.ClientModel.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Configuration.ConfigurationManager.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Diagnostics.EventLog.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.IO.Pipelines.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Memory.Data.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Security.Cryptography.Pkcs.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Text.Encodings.Web.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Text.Json.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.assert.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.core.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.execution.dotnet.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\unix\lib\net8.0\Microsoft.Data.SqlClient.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win\lib\net8.0\Microsoft.Data.SqlClient.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.csproj.AssemblyReference.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.AssemblyInfoInputs.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.AssemblyInfo.cs
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.csproj.CoreCompileInputs.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPat.ABAC37AF.Up2Date
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\refint\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.pdb
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.genruntimeconfig.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\ref\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\patcher.config.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.deps.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.runtimeconfig.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.exe
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\MagDbPatcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.pdb
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\.msCoverageSourceRootsMapping_MagDbPatcher.Tests
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\5.3.3\Update_5_3_2.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\5.3.3\Update_5_3_3_20181016.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\5.3.3\Upgrade5_2_1.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.0\Update_MagEtegra_6_0_ from_5_3_3.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.1\Script_6_1_Final.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.2\6_2_20210324_1349.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.3\6_3_0_Final.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.5\6_4_0_20220419.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\6.5\MagEtegra_6_X_20230112.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.0\ME_7_0_0_0.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.1\7_2_1.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251117\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251117\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251205\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251205\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251231\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20251231\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20260123\7_2_3_Languages.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2.3-20260123\7_2_3_patch.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\7.2\ME_7_2_0.sql
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\patcher.config.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\patches\versions.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\testhost.exe
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\testhost.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.runner.visualstudio.testadapter.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.runner.reporters.netcoreapp10.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.runner.utility.netcoreapp10.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.deps.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.runtimeconfig.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.exe
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.deps.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.runtimeconfig.json
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\MagDbPatcher.Tests.pdb
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Azure.Core.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Azure.Identity.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.VisualStudio.CodeCoverage.Shim.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Data.SqlClient.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Options.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Extensions.Primitives.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Identity.Client.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Logging.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Protocols.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.IdentityModel.Tokens.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.SqlServer.Server.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.CoreUtilities.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.PlatformAbstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.CommunicationUtilities.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.CrossPlatEngine.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.TestPlatform.Utilities.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Microsoft.VisualStudio.TestPlatform.Common.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\Newtonsoft.Json.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.ClientModel.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Configuration.ConfigurationManager.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Diagnostics.EventLog.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.IO.Pipelines.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Memory.Data.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Security.Cryptography.Pkcs.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Text.Encodings.Web.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\System.Text.Json.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.abstractions.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.assert.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.core.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\xunit.execution.dotnet.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.Data.SqlClient.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.TestPlatform.CoreUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\cs\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\de\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\es\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\fr\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\it\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ja\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ko\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pl\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\pt-BR\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ru\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\tr\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hans\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\zh-Hant\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\unix\lib\net8.0\Microsoft.Data.SqlClient.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win\lib\net8.0\Microsoft.Data.SqlClient.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\bin\Release\net8.0-windows\ME_ACS_SQL_Patcher.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.csproj.AssemblyReference.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.AssemblyInfoInputs.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.AssemblyInfo.cs
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.csproj.CoreCompileInputs.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPat.ABAC37AF.Up2Date
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\refint\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.pdb
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\MagDbPatcher.Tests.genruntimeconfig.cache
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Release\net8.0-windows\ref\MagDbPatcher.Tests.dll
