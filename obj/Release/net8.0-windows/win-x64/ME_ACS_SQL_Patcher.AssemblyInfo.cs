@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Magnet Security")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e55d4f4aef7130d7365e9115d7b723f586d77e78")]
 [assembly: System.Reflection.AssemblyProductAttribute("ME_ACS SQL Patcher")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ME_ACS_SQL_Patcher")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -7,6 +7,9 @@ namespace MagDbPatcher;
 
 public partial class App : Application
 {
+    // amirul support 14, 2026
+    private const string _buildSignature = "amirul support 14, 2026";
+
     private static readonly string ErrorLogPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "MagDbPatcher",

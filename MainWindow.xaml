@@ -23,8 +23,8 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="ME_ACS SQL Patcher" FontSize="46" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-                    <TextBlock Text="Modern backup upgrade workflow" FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="0,6,0,0"/>
+                    <TextBlock Text="ME_ACS SQL Patcher" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+                    <TextBlock Text="Restore and upgrade a MagEtegra database backup." FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="0,6,0,0"/>
                 </StackPanel>
 
                 <TextBlock x:Name="txtVersion"
@@ -104,6 +104,8 @@
                                     MinWidth="84"
                                     Click="BtnBrowse_Click"/>
                         </Grid>
+                        <TextBlock x:Name="txtSourceFileHint" Margin="0,6,0,0" FontSize="12"
+                                   Foreground="{StaticResource TextMuted}" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 
@@ -126,7 +128,7 @@
                                 <TextBlock x:Name="txtStep2Status" Text="Pending" Style="{StaticResource StepStatusChipText}"/>
                             </Border>
                         </Grid>
-                        <TextBlock Grid.Row="1" Text="Confirm source and target versions. Target defaults to latest reachable version." Style="{StaticResource FieldLabelText}" Margin="0,6,0,10"/>
+                        <TextBlock Grid.Row="1" Text="Select the backup's current version and where to upgrade to." Style="{StaticResource FieldLabelText}" Margin="0,6,0,10"/>
 
                         <StackPanel Grid.Row="2">
                             <Grid Margin="0,0,0,10">
@@ -174,18 +176,30 @@
                             </Grid>
                         </StackPanel>
 
-                        <TextBlock Grid.Row="3"
-                                   x:Name="txtUpgradePath"
-                                   FontSize="12"
-                                   Foreground="{StaticResource Info}"
-                                   TextWrapping="Wrap"
-                                   VerticalAlignment="Top"/>
+                        <Border x:Name="bdUpgradePath" Grid.Row="3"
+                                Background="{StaticResource BgTertiary}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1" CornerRadius="6" Padding="10,7"
+                                Margin="0,8,0,0" Visibility="Collapsed">
+                            <TextBlock x:Name="txtUpgradePath"
+                                       FontSize="12" FontFamily="Consolas"
+                                       Foreground="{StaticResource TextPrimary}"
+                                       TextWrapping="Wrap"/>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <Border Grid.Row="2" Style="{StaticResource Card}" VerticalAlignment="Top">
-                    <StackPanel>
-                        <Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -195,80 +209,69 @@
                                 <TextBlock x:Name="txtStep3Status" Text="Pending" Style="{StaticResource StepStatusChipText}"/>
                             </Border>
                         </Grid>
-                        <TextBlock Text="Verify SQL connection before running. Patch tools stay under Connection Settings." Style="{StaticResource FieldLabelText}" Margin="0,6,0,0"/>
 
-                        <Expander x:Name="expConnectionSettings" IsExpanded="True" Margin="0,8,0,0">
+                        <TextBlock Grid.Row="1" Text="Enter your SQL Server instance and test the connection." Style="{StaticResource FieldLabelText}" Margin="0,6,0,10"/>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="cmbSqlServer"
+                                      Grid.Column="0"
+                                      TabIndex="20"
+                                      IsEditable="True"
+                                      Style="{StaticResource DarkEditableComboBox}"
+                                      FontSize="13"/>
+                            <Button x:Name="btnTestSql"
+                                    Grid.Column="1"
+                                    TabIndex="25"
+                                    Content="Test Connection"
+                                    Style="{StaticResource BtnSecondary}"
+                                    Margin="10,0,0,0"
+                                    MinWidth="120"
+                                    Click="BtnTestSql_Click"/>
+                        </Grid>
+
+                        <StackPanel Grid.Row="3" Margin="0,6,0,0">
+                            <TextBlock x:Name="txtSqlTestResult"
+                                       Foreground="{StaticResource TextMuted}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="Local only. Use .\INSTANCE or (localdb)\MSSQLLocalDB. Default is .\MAGSQL."
+                                       FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <Expander x:Name="expConnectionSettings" Grid.Row="4" IsExpanded="False" Margin="0,12,0,0">
                             <Expander.Header>
-                                <TextBlock Text="Connection Settings" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}"/>
+                                <TextBlock Text="Advanced Settings" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}"/>
                             </Expander.Header>
-
-                            <ScrollViewer Margin="0,10,0,0" VerticalScrollBarVisibility="Visible" MaxHeight="420">
+                            <ScrollViewer Margin="0,10,0,0" VerticalScrollBarVisibility="Auto" MaxHeight="300">
                                 <StackPanel>
                                     <TextBlock Text="Authentication" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
-
-                                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                         <RadioButton x:Name="rbAuthWindows" TabIndex="21" Content="Windows" IsChecked="True" Margin="0,0,16,0" Checked="AuthMode_Checked"/>
                                         <RadioButton x:Name="rbAuthSql" TabIndex="22" Content="SQL Login" Checked="AuthMode_Checked"/>
                                     </StackPanel>
-
-                                    <StackPanel x:Name="pnlSqlLogin" Margin="0,8,0,0" Visibility="Collapsed">
+                                    <StackPanel x:Name="pnlSqlLogin" Margin="0,0,0,8" Visibility="Collapsed">
                                         <TextBlock Text="Username" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
                                         <TextBox x:Name="txtSqlUsername" TabIndex="23" FontSize="13"/>
                                         <TextBlock Text="Password" Style="{StaticResource FieldLabelText}" Margin="0,10,0,6"/>
                                         <PasswordBox x:Name="pwdSqlPassword" TabIndex="24" FontSize="13"/>
                                     </StackPanel>
-
-                                    <TextBlock Text="SQL Server" Style="{StaticResource FieldLabelText}" Margin="0,12,0,6"/>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <ComboBox x:Name="cmbSqlServer"
-                                                  Grid.Column="0"
-                                                  TabIndex="20"
-                                                  IsEditable="True"
-                                                  Style="{StaticResource DarkEditableComboBox}"
-                                                  FontSize="13"/>
-
-                                        <Button x:Name="btnTestSql"
-                                                Grid.Column="1"
-                                                TabIndex="25"
-                                                Content="Test"
-                                                Style="{StaticResource BtnSecondary}"
-                                                Margin="10,0,0,0"
-                                                MinWidth="72"
-                                                Click="BtnTestSql_Click"/>
-                                    </Grid>
-
-                                    <TextBlock x:Name="txtSqlTestResult"
-                                               Foreground="{StaticResource TextMuted}"
-                                               Margin="0,6,0,0"
-                                               TextWrapping="Wrap"/>
-
-                                    <TextBlock Text="Local only. Use .\INSTANCE or (localdb)\MSSQLLocalDB. Default is .\MAGSQL." FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,10,0,0" TextWrapping="Wrap"/>
-
-                                    <TextBlock Text="Patches Folder" Style="{StaticResource FieldLabelText}" Margin="0,12,0,6"/>
-                                    <TextBox x:Name="txtPatchesFolder" IsReadOnly="True" FontSize="12"/>
-
-                                    <WrapPanel Margin="0,8,0,0" Orientation="Horizontal">
+                                    <TextBlock Text="Patches Folder" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="txtPatchesFolder" IsReadOnly="True" FontSize="12" Margin="0,0,0,8"/>
+                                    <WrapPanel Orientation="Horizontal">
                                         <Button x:Name="btnChangePatchesFolder" Content="Change" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" MinWidth="74" Click="BtnChangePatchesFolder_Click"/>
                                         <Button x:Name="btnOpenPatchesFolder" Content="Open" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" MinWidth="64" Click="BtnOpenPatchesFolder_Click"/>
                                         <Button x:Name="btnResetPatchesFolder" Content="Reset" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" MinWidth="64" Click="BtnResetPatchesFolder_Click"/>
                                         <Button x:Name="btnImportPatchPack" Content="Import Patch Pack (.zip)" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" Click="BtnImportPatchPack_Click"/>
                                     </WrapPanel>
-
-                                    <TextBlock x:Name="txtLastImportedPack"
-                                               Text=""
-                                               FontSize="12"
-                                               Foreground="{StaticResource TextMuted}"
-                                               Margin="0,0,0,0"
-                                               TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="txtLastImportedPack" Text="" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ScrollViewer>
                         </Expander>
-                    </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
             </ScrollViewer>
@@ -289,38 +292,21 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Row="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Step 4: Run Patch" Style="{StaticResource SectionHeaderText}"/>
+                                <Border x:Name="bdStep4Status" Grid.Column="1" Style="{StaticResource StepStatusChip}" Margin="8,0,0,0">
+                                    <TextBlock x:Name="txtStep4Status" Text="Pending" Style="{StaticResource StepStatusChipText}"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="Review the plan and start the patch when all steps are ready." Style="{StaticResource FieldLabelText}" Margin="0,6,0,10"/>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="0">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Step 4: Run Patch" Style="{StaticResource SectionHeaderText}"/>
-                                    <Border x:Name="bdStep4Status" Grid.Column="1" Style="{StaticResource StepStatusChip}" Margin="8,0,0,0">
-                                        <TextBlock x:Name="txtStep4Status" Text="Pending" Style="{StaticResource StepStatusChipText}"/>
-                                    </Border>
-                                </Grid>
-                                <TextBlock Text="Review plan and start patch. Complete Steps 1 to 3 first." Style="{StaticResource FieldLabelText}" Margin="0,6,0,10"/>
-                            </StackPanel>
-
-                            <Button x:Name="btnCopyPatchPlan"
-                                    Grid.Column="1"
-                                    TabIndex="6"
-                                    Content="Copy Patch Plan"
-                                    Style="{StaticResource BtnSecondary}"
-                                    MinWidth="130"
-                                    Margin="10,0,0,0"
-                                    VerticalAlignment="Top"
-                                    Click="BtnCopyPatchPlan_Click"/>
-                        </Grid>
-
-                        <Border x:Name="bdStatusBanner" Grid.Row="1" Style="{StaticResource StatusBannerInfo}" Margin="0,0,0,10">
+                        <Border x:Name="bdStatusBanner" Grid.Row="1" Style="{StaticResource StatusBannerInfo}" Margin="0,0,0,10" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock x:Name="txtNotification" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" Margin="0,0,0,6"/>
                                 <ListBox x:Name="lstValidationIssues"
@@ -428,6 +414,7 @@
 
                             <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                                 <Button x:Name="btnRetryFromValidation" Content="Retry Validation" Style="{StaticResource BtnSecondary}" IsEnabled="False" Margin="0,0,8,8" Click="BtnRetryFromValidation_Click"/>
+                                <Button x:Name="btnCopyPatchPlan" TabIndex="6" Content="Copy Patch Plan" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" Click="BtnCopyPatchPlan_Click"/>
                                 <Button x:Name="btnCopyDiagnostics" Content="Copy Diagnostics" Style="{StaticResource BtnSecondary}" IsEnabled="False" Margin="0,0,8,8" Click="BtnCopyDiagnostics_Click"/>
                                 <Button x:Name="btnOpenOutputFolder" Content="Open Output Folder" Style="{StaticResource BtnSecondary}" IsEnabled="False" Margin="0,0,0,8" Click="BtnOpenOutputFolder_Click"/>
                             </WrapPanel>

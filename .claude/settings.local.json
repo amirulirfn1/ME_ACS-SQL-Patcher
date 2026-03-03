@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build)",
+      "Bash(dotnet test --no-build)",
+      "Bash(Start-Process \"c:\\\\Users\\\\SupN\\\\Desktop\\\\Amirul\\\\Boring Project\\\\ME_ACS SQL Patcher\\\\publish\\\\ME_ACS_SQL_Patcher.exe\")",
+      "Bash(cmd /c start \"\" \"c:\\\\Users\\\\SupN\\\\Desktop\\\\Amirul\\\\Boring Project\\\\ME_ACS SQL Patcher\\\\publish\\\\ME_ACS_SQL_Patcher.exe\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File package.ps1)",
+      "Bash(dotnet build ME_ACS_SQL_Patcher.csproj -c Debug)"
+    ]
+  }
+}

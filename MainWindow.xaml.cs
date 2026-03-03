@@ -144,7 +144,7 @@ public partial class MainWindow : Window
         _viewModel.ClearValidation();
         _runWarnings.Clear();
         UpdateWarningChip(0);
-        SetBanner(NotificationLevel.Info, "Ready");
+        bdStatusBanner.Visibility = Visibility.Collapsed;
 
         txtRunSummaryVersions.Text = "Versions: Select source and target versions";
         txtRunSummaryPlan.Text = "Plan: Select versions to preview steps and script count.";
@@ -325,7 +325,7 @@ public partial class MainWindow : Window
     {
         if (_versionService == null)
         {
-            txtUpgradePath.Text = "";
+            bdUpgradePath.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -334,7 +334,7 @@ public partial class MainWindow : Window
 
         if (string.IsNullOrWhiteSpace(fromVersion) || string.IsNullOrWhiteSpace(toVersion))
         {
-            txtUpgradePath.Text = "";
+            bdUpgradePath.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -344,12 +344,16 @@ public partial class MainWindow : Window
             var totalScripts = steps.Sum(s => s.Scripts.Count);
             var segments = new List<string> { fromVersion };
             segments.AddRange(steps.Select(s => s.ToVersion));
-            txtUpgradePath.Text = $"Path: {string.Join(" -> ", segments)} ({steps.Count} step(s), {totalScripts} script(s))";
+            txtUpgradePath.Text = $"{string.Join("  →  ", segments)}    ({steps.Count} step{(steps.Count == 1 ? "" : "s")}, {totalScripts} script{(totalScripts == 1 ? "" : "s")})";
+            txtUpgradePath.Foreground = (Brush)FindResource("TextPrimary");
         }
         catch (Exception ex)
         {
-            txtUpgradePath.Text = $"Path unavailable: {ex.Message}";
+            txtUpgradePath.Text = $"No path available: {ex.Message}";
+            txtUpgradePath.Foreground = (Brush)FindResource("Error");
         }
+
+        bdUpgradePath.Visibility = Visibility.Visible;
     }
 
     private void RefreshRunSummary()
@@ -368,6 +372,27 @@ public partial class MainWindow : Window
         }
 
         var sourcePath = (cmbSourcePath.Text ?? "").Trim();
+
+        // File hint for Step 1
+        if (string.IsNullOrWhiteSpace(sourcePath))
+        {
+            txtSourceFileHint.Text = "";
+        }
+        else if (!File.Exists(sourcePath))
+        {
+            txtSourceFileHint.Text = "File not found.";
+            txtSourceFileHint.Foreground = (Brush)FindResource("Error");
+        }
+        else
+        {
+            var info = new FileInfo(sourcePath);
+            var size = info.Length >= 1024L * 1024 * 1024
+                ? $"{info.Length / (1024.0 * 1024 * 1024):F1} GB"
+                : $"{info.Length / (1024.0 * 1024):F0} MB";
+            txtSourceFileHint.Text = $"{info.Name}  ({size})";
+            txtSourceFileHint.Foreground = (Brush)FindResource("Success");
+        }
+
         var fromVersion = GetSelectedVersionId(cmbFromVersion) ?? "(not selected)";
         var toVersion = GetSelectedVersionId(cmbToVersion) ?? "(not selected)";
         var tempFolder = _settings.PatchTempFolder ?? @"C:\temp\MagDbPatcher";
@@ -543,6 +568,7 @@ public partial class MainWindow : Window
     private void SetBanner(NotificationLevel level, string message, bool warningBanner = false)
     {
         txtNotification.Text = message;
+        bdStatusBanner.Visibility = Visibility.Visible;
 
         if (warningBanner)
         {
@@ -866,7 +892,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        expConnectionSettings.IsExpanded = true;
         if (string.IsNullOrWhiteSpace(cmbSqlServer.Text))
         {
             cmbSqlServer.Focus();

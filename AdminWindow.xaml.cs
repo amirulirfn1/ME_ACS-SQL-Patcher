@@ -27,14 +27,16 @@ public partial class AdminWindow : Window
     private readonly ObservableCollection<VersionDisplayItem> _versions = new();
     private readonly ObservableCollection<PatchDisplayItem> _patches = new();
     private readonly ObservableCollection<string> _scriptsForVersion = new();
-    private readonly ObservableCollection<string> _scriptsForPatch = new();
     private readonly ObservableCollection<VersionDisplayItem> _libraryVersions = new();
     private readonly ObservableCollection<string> _libraryScripts = new();
     private readonly ObservableCollection<StagedPatchLinkDisplay> _stagedLinks = new();
 
     private readonly List<PatchLinkMutation> _stagedLinkMutations = new();
+    private readonly ObservableCollection<string> _editPatchScripts = new();
     private PatchCatalogSnapshot? _librarySnapshot;
     private bool _isRefreshing;
+    private bool _isAddingNewVersion;
+    private bool _isAddingNewPatch;
 
     public AdminWindow(
         VersionService versionService,
@@ -58,7 +60,7 @@ public partial class AdminWindow : Window
         lstVersions.ItemsSource = _versions;
         lstPatches.ItemsSource = _patches;
         lstScripts.ItemsSource = _scriptsForVersion;
-        lstPatchScripts.ItemsSource = _scriptsForPatch;
+        lstPatchScripts.ItemsSource = _editPatchScripts;
         lstLibraryVersions.ItemsSource = _libraryVersions;
         lstLibraryScripts.ItemsSource = _libraryScripts;
         lstLibraryLinks.ItemsSource = _stagedLinks;
@@ -128,11 +130,31 @@ public partial class AdminWindow : Window
             RefreshVersionScripts();
             RefreshPatchScripts();
             UpdateButtonsState();
+            RebuildChainVisualization();
         }
         finally
         {
             _isRefreshing = false;
         }
+    }
+
+    private void RebuildChainVisualization()
+    {
+        var versions = _versionService.GetAllVersions();
+        if (versions.Count == 0)
+        {
+            txtVersionChain.Text = "(no versions)";
+            return;
+        }
+
+        var parts = new System.Text.StringBuilder();
+        foreach (var v in versions)
+        {
+            if (parts.Length > 0)
+                parts.Append("  →  ");
+            parts.Append(v.Id);
+        }
+        txtVersionChain.Text = parts.ToString();
     }
 
     private string? GetSelectedPatchKey()
@@ -158,6 +180,45 @@ public partial class AdminWindow : Window
 
         RefreshVersionScripts();
         UpdateButtonsState();
+        PopulateVersionForm(lstVersions.SelectedItem as VersionDisplayItem);
+    }
+
+    private void PopulateVersionForm(VersionDisplayItem? item)
+    {
+        _isAddingNewVersion = false;
+        bdVersionValidation.Visibility = System.Windows.Visibility.Collapsed;
+        pnlVersionPredecessor.Visibility = System.Windows.Visibility.Collapsed;
+
+        if (item == null)
+        {
+            txtVersionFormHeader.Text = "Select a version to edit";
+            txtEditVersionId.Text = "";
+            txtEditVersionId.IsEnabled = false;
+            txtEditVersionName.Text = "";
+            txtEditVersionName.IsEnabled = false;
+            cmbEditUpgradesTo.IsEnabled = false;
+            btnSaveVersion.IsEnabled = false;
+            btnDiscardVersion.IsEnabled = false;
+            return;
+        }
+
+        txtVersionFormHeader.Text = $"Editing: {item.Id}";
+        txtEditVersionId.Text = item.Id;
+        txtEditVersionId.IsEnabled = false;
+        txtEditVersionName.Text = item.Name;
+        txtEditVersionName.IsEnabled = true;
+
+        var allVersions = _versionService.GetAllVersions();
+        var otherVersions = allVersions
+            .Where(v => !string.Equals(v.Id, item.Id, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        cmbEditUpgradesTo.ItemsSource = otherVersions;
+        cmbEditUpgradesTo.SelectedItem = otherVersions.FirstOrDefault(v =>
+            string.Equals(v.Id, item.UpgradesTo, StringComparison.OrdinalIgnoreCase));
+        cmbEditUpgradesTo.IsEnabled = true;
+
+        btnSaveVersion.IsEnabled = true;
+        btnDiscardVersion.IsEnabled = true;
     }
 
     private void LstScripts_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -175,6 +236,68 @@ public partial class AdminWindow : Window
 
         RefreshPatchScripts();
         UpdateButtonsState();
+        PopulatePatchForm(lstPatches.SelectedItem as PatchDisplayItem);
+    }
+
+    private void PopulatePatchForm(PatchDisplayItem? item)
+    {
+        _isAddingNewPatch = false;
+        bdPatchValidation.Visibility = System.Windows.Visibility.Collapsed;
+
+        var allVersions = _versionService.GetAllVersions();
+        cmbEditPatchFrom.ItemsSource = allVersions;
+        cmbEditPatchTo.ItemsSource = allVersions;
+
+        if (item == null)
+        {
+            txtPatchFormHeader.Text = "Select a patch to edit";
+            cmbEditPatchFrom.SelectedItem = null;
+            cmbEditPatchTo.SelectedItem = null;
+            cmbEditPatchFrom.IsEnabled = false;
+            cmbEditPatchTo.IsEnabled = false;
+            _editPatchScripts.Clear();
+            SetPatchFormEnabled(false);
+            return;
+        }
+
+        txtPatchFormHeader.Text = $"Editing: {item.From}  →  {item.To}";
+        cmbEditPatchFrom.SelectedItem = allVersions.FirstOrDefault(v =>
+            string.Equals(v.Id, item.From, StringComparison.OrdinalIgnoreCase));
+        cmbEditPatchTo.SelectedItem = allVersions.FirstOrDefault(v =>
+            string.Equals(v.Id, item.To, StringComparison.OrdinalIgnoreCase));
+
+        // Auto-generated patches: lock From/To since auto-gen will overwrite them
+        cmbEditPatchFrom.IsEnabled = !item.IsAutoGenerated;
+        cmbEditPatchTo.IsEnabled = !item.IsAutoGenerated;
+
+        _editPatchScripts.Clear();
+        var patch = _versionService.GetAllPatches().FirstOrDefault(p =>
+            string.Equals(p.From, item.From, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(p.To, item.To, StringComparison.OrdinalIgnoreCase));
+        if (patch != null)
+            foreach (var s in patch.Scripts)
+                _editPatchScripts.Add(s);
+
+        SetPatchFormEnabled(true);
+    }
+
+    private void SetPatchFormEnabled(bool enabled)
+    {
+        btnSavePatch.IsEnabled = enabled;
+        btnDiscardPatch.IsEnabled = enabled;
+        btnAddEditScript.IsEnabled = enabled;
+        btnAutoFillScripts.IsEnabled = enabled;
+        lstPatchScripts.IsEnabled = enabled;
+        UpdatePatchScriptActionButtons();
+    }
+
+    private void UpdatePatchScriptActionButtons()
+    {
+        var hasSelection = lstPatchScripts.SelectedItem is string;
+        var idx = lstPatchScripts.SelectedIndex;
+        btnRemoveEditScript.IsEnabled = hasSelection && lstPatchScripts.IsEnabled;
+        btnMoveScriptUp.IsEnabled = hasSelection && idx > 0 && lstPatchScripts.IsEnabled;
+        btnMoveScriptDown.IsEnabled = hasSelection && idx < _editPatchScripts.Count - 1 && lstPatchScripts.IsEnabled;
     }
 
     private void LstLibraryVersions_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -221,17 +344,33 @@ public partial class AdminWindow : Window
             });
         }
 
-        cmbLinkFrom.ItemsSource = snapshot.Versions.OrderBy(v => v.Order).ToList();
-        cmbLinkTo.ItemsSource = snapshot.Versions.OrderBy(v => v.Order).ToList();
+        var orderedVersions = snapshot.Versions.OrderBy(v => v.Order).ToList();
+        cmbLinkFrom.ItemsSource = orderedVersions;
+        cmbLinkTo.ItemsSource = orderedVersions;
+        if (orderedVersions.Count > 0)
+        {
+            cmbLinkFrom.SelectedIndex = 0;
+            cmbLinkTo.SelectedIndex = orderedVersions.Count - 1;
+        }
 
         var totalErrors = snapshot.Validation.Errors.Count;
         var totalWarnings = snapshot.Validation.Warnings.Count;
-        txtPatchCatalogSummary.Text =
-            $"Detected {snapshot.Versions.Count} version(s), {snapshot.Patches.Count} patch link(s), {snapshot.AvailableScripts.Count} script(s).";
-        txtPatchCatalogValidation.Text =
-            totalErrors > 0
-                ? $"Validation: {totalErrors} error(s), {totalWarnings} warning(s). Fix errors before applying."
-                : $"Validation: OK ({totalWarnings} warning(s)).";
+        var summary = $"Detected {snapshot.Versions.Count} version(s), {snapshot.Patches.Count} patch link(s), {snapshot.AvailableScripts.Count} script(s).";
+        var validationMsg = totalErrors > 0
+            ? $"{totalErrors} error(s), {totalWarnings} warning(s) — fix errors before applying."
+            : totalWarnings > 0
+                ? $"OK with {totalWarnings} warning(s)."
+                : "All checks passed.";
+
+        var bannerStyle = totalErrors > 0 ? "StatusBannerError"
+            : totalWarnings > 0 ? "StatusBannerWarning"
+            : "StatusBannerSuccess";
+
+        bdCatalogStatus.Style = FindResource(bannerStyle) as Style;
+        txtCatalogStatusMsg.Text = $"{summary} {validationMsg}";
+        bdCatalogStatus.Visibility = System.Windows.Visibility.Visible;
+
+        txtFolderStatus.Text = $"Contains {snapshot.Versions.Count} version(s), {snapshot.AvailableScripts.Count} script(s)";
 
         _libraryScripts.Clear();
         if (_libraryVersions.Count > 0)
@@ -254,7 +393,7 @@ public partial class AdminWindow : Window
 
     private void RefreshPatchScripts()
     {
-        _scriptsForPatch.Clear();
+        _editPatchScripts.Clear();
 
         if (lstPatches.SelectedItem is not PatchDisplayItem selectedPatch)
             return;
@@ -267,7 +406,7 @@ public partial class AdminWindow : Window
             return;
 
         foreach (var script in patch.Scripts)
-            _scriptsForPatch.Add(script);
+            _editPatchScripts.Add(script);
     }
 
     private void UpdateButtonsState()
@@ -279,12 +418,11 @@ public partial class AdminWindow : Window
             hasStagedLinkSelection: lstLibraryLinks.SelectedItem is StagedPatchLinkDisplay,
             hasStagedChanges: _stagedLinks.Count > 0);
 
-        btnEditVersion.IsEnabled = state.EditVersionEnabled;
         btnDeleteVersion.IsEnabled = state.DeleteVersionEnabled;
+        btnOpenVersionFolder.IsEnabled = state.AddScriptEnabled;
         btnAddScript.IsEnabled = state.AddScriptEnabled;
         btnRemoveScript.IsEnabled = state.RemoveScriptEnabled;
 
-        btnEditPatch.IsEnabled = state.EditPatchEnabled;
         btnDeletePatch.IsEnabled = state.DeletePatchEnabled;
         btnRemoveStagedLink.IsEnabled = state.RemoveStagedLinkEnabled;
         btnApplyCatalog.IsEnabled = state.ApplyCatalogEnabled;
@@ -472,49 +610,112 @@ public partial class AdminWindow : Window
     private async void BtnValidateCatalog_Click(object sender, RoutedEventArgs e)
     {
         var validation = await _catalogService.ValidateAsync(txtActivePatchesFolder.Text.Trim());
+        var bannerStyle = validation.HasErrors ? "StatusBannerError"
+            : validation.Warnings.Count > 0 ? "StatusBannerWarning"
+            : "StatusBannerSuccess";
         var msg = validation.HasErrors
             ? $"Validation failed: {validation.Errors.Count} error(s), {validation.Warnings.Count} warning(s)."
             : $"Validation passed with {validation.Warnings.Count} warning(s).";
-        MessageBox.Show(msg, "Patch Catalog Validation", MessageBoxButton.OK,
-            validation.HasErrors ? MessageBoxImage.Warning : MessageBoxImage.Information);
+        bdCatalogStatus.Style = FindResource(bannerStyle) as Style;
+        txtCatalogStatusMsg.Text = msg;
+        bdCatalogStatus.Visibility = System.Windows.Visibility.Visible;
     }
 
-    private async void BtnAddVersion_Click(object sender, RoutedEventArgs e)
+    private void BtnAddVersion_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new VersionEditDialog(_versionService.GetAllVersions())
-        {
-            Owner = this
-        };
+        _isAddingNewVersion = true;
+        lstVersions.UnselectAll();
+        txtVersionFormHeader.Text = "Add New Version";
+        txtEditVersionId.Text = "";
+        txtEditVersionId.IsEnabled = true;
+        txtEditVersionName.Text = "";
+        txtEditVersionName.IsEnabled = true;
 
-        if (dialog.ShowDialog() != true)
+        var allVersions = _versionService.GetAllVersions();
+        cmbEditUpgradesTo.ItemsSource = allVersions;
+        cmbEditUpgradesTo.SelectedItem = null;
+        cmbEditUpgradesTo.IsEnabled = true;
+
+        // Show "Connects after" field and pre-select the current chain tail
+        var chainTail = allVersions
+            .Where(v => string.IsNullOrWhiteSpace(v.UpgradesTo))
+            .MaxBy(v => v.Order);
+        cmbVersionPredecessor.ItemsSource = allVersions;
+        cmbVersionPredecessor.SelectedItem = chainTail;
+        pnlVersionPredecessor.Visibility = System.Windows.Visibility.Visible;
+
+        bdVersionValidation.Visibility = System.Windows.Visibility.Collapsed;
+        btnSaveVersion.IsEnabled = false;
+        btnDiscardVersion.IsEnabled = true;
+        txtEditVersionId.Focus();
+    }
+
+    private void TxtEditVersionId_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (!_isAddingNewVersion)
             return;
 
-        await _versionService.AddVersionAsync(dialog.VersionId, dialog.VersionName, dialog.UpgradesTo);
+        var id = txtEditVersionId.Text.Trim();
+        var isDuplicate = _versions.Any(v =>
+            string.Equals(v.Id, id, StringComparison.OrdinalIgnoreCase));
+
+        if (isDuplicate)
+        {
+            bdVersionValidation.Visibility = System.Windows.Visibility.Visible;
+            txtVersionValidationMsg.Text = $"Version '{id}' already exists.";
+            btnSaveVersion.IsEnabled = false;
+        }
+        else
+        {
+            bdVersionValidation.Visibility = System.Windows.Visibility.Collapsed;
+            btnSaveVersion.IsEnabled = !string.IsNullOrWhiteSpace(id);
+        }
+    }
+
+    private void CmbEditUpgradesTo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // No action needed — selection is read at save time
+    }
+
+    private async void BtnSaveVersion_Click(object sender, RoutedEventArgs e)
+    {
+        var id = txtEditVersionId.Text.Trim();
+        var name = txtEditVersionName.Text.Trim();
+        var upgradesTo = (cmbEditUpgradesTo.SelectedItem as Models.VersionInfo)?.Id;
+
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            bdVersionValidation.Visibility = System.Windows.Visibility.Visible;
+            txtVersionValidationMsg.Text = "Version ID is required.";
+            return;
+        }
+
+        if (_isAddingNewVersion)
+        {
+            await _versionService.AddVersionAsync(id, string.IsNullOrWhiteSpace(name) ? id : name, upgradesTo);
+
+            // Link the predecessor's UpgradesTo → new version
+            if (cmbVersionPredecessor.SelectedItem is Models.VersionInfo predecessor &&
+                !string.Equals(predecessor.Id, id, StringComparison.OrdinalIgnoreCase))
+            {
+                await _versionService.UpdateVersionAsync(predecessor.Id, predecessor.Name, upgradesTo: id);
+            }
+        }
+        else
+        {
+            var selectedId = (lstVersions.SelectedItem as VersionDisplayItem)?.Id;
+            if (selectedId == null)
+                return;
+            await _versionService.UpdateVersionAsync(selectedId, string.IsNullOrWhiteSpace(name) ? selectedId : name, upgradesTo);
+        }
+
         await OnMutationCompletedAsync();
         await ScanCatalogAsync();
     }
 
-    private async void BtnEditVersion_Click(object sender, RoutedEventArgs e)
+    private void BtnDiscardVersion_Click(object sender, RoutedEventArgs e)
     {
-        if (lstVersions.SelectedItem is not VersionDisplayItem selected)
-            return;
-
-        var current = _versionService.GetAllVersions()
-            .FirstOrDefault(v => string.Equals(v.Id, selected.Id, StringComparison.OrdinalIgnoreCase));
-        if (current == null)
-            return;
-
-        var dialog = new VersionEditDialog(_versionService.GetAllVersions(), current.Id, current.Name, current.UpgradesTo)
-        {
-            Owner = this
-        };
-
-        if (dialog.ShowDialog() != true)
-            return;
-
-        await _versionService.UpdateVersionAsync(current.Id, dialog.VersionName, dialog.UpgradesTo);
-        await OnMutationCompletedAsync();
-        await ScanCatalogAsync();
+        PopulateVersionForm(lstVersions.SelectedItem as VersionDisplayItem);
     }
 
     private async void BtnDeleteVersion_Click(object sender, RoutedEventArgs e)
@@ -534,6 +735,22 @@ public partial class AdminWindow : Window
         await _versionService.DeleteVersionAsync(selected.Id);
         await OnMutationCompletedAsync();
         await ScanCatalogAsync();
+    }
+
+    private void BtnOpenVersionFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (lstVersions.SelectedItem is not VersionDisplayItem selected)
+            return;
+
+        var folder = Path.Combine(_versionService.GetPatchesFolder(), selected.Id);
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = folder,
+            UseShellExecute = true
+        });
     }
 
     private async void BtnAddScript_Click(object sender, RoutedEventArgs e)
@@ -577,56 +794,144 @@ public partial class AdminWindow : Window
         await ScanCatalogAsync();
     }
 
-    private async void BtnAddPatch_Click(object sender, RoutedEventArgs e)
+    private void BtnAddPatch_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new PatchEditDialog(
-            _versionService.GetAllVersions(),
-            _versionService.GetAvailableScripts(),
-            _versionService.GetPatchesFolder())
+        _isAddingNewPatch = true;
+        lstPatches.UnselectAll();
+        txtPatchFormHeader.Text = "Add New Patch";
+
+        var allVersions = _versionService.GetAllVersions();
+        cmbEditPatchFrom.ItemsSource = allVersions;
+        cmbEditPatchTo.ItemsSource = allVersions;
+        cmbEditPatchFrom.SelectedItem = null;
+        cmbEditPatchTo.SelectedItem = null;
+        cmbEditPatchFrom.IsEnabled = true;
+        cmbEditPatchTo.IsEnabled = true;
+
+        _editPatchScripts.Clear();
+        bdPatchValidation.Visibility = System.Windows.Visibility.Collapsed;
+        SetPatchFormEnabled(true);
+    }
+
+    private void LstPatchScripts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdatePatchScriptActionButtons();
+    }
+
+    private void BtnAddEditScript_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
         {
-            Owner = this
+            Title = "Select SQL Script(s)",
+            Filter = "SQL Files (*.sql)|*.sql|All Files (*.*)|*.*",
+            Multiselect = true,
+            InitialDirectory = _versionService.GetPatchesFolder()
         };
 
         if (dialog.ShowDialog() != true)
             return;
 
-        await _versionService.AddPatchAsync(dialog.FromVersion, dialog.ToVersion);
-        await _versionService.UpdatePatchScriptsAsync(dialog.FromVersion, dialog.ToVersion, dialog.Scripts);
-        await _versionService.MarkPatchManualAsync(dialog.FromVersion, dialog.ToVersion);
+        var patchesFolder = _versionService.GetPatchesFolder();
+        foreach (var file in dialog.FileNames)
+        {
+            // Use relative path if file is inside the patches folder
+            var relativeName = file.StartsWith(patchesFolder, StringComparison.OrdinalIgnoreCase)
+                ? file.Substring(patchesFolder.Length).TrimStart('/', '\\').Replace('\\', '/')
+                : Path.GetFileName(file);
+            if (!_editPatchScripts.Contains(relativeName))
+                _editPatchScripts.Add(relativeName);
+        }
+    }
+
+    private void BtnRemoveEditScript_Click(object sender, RoutedEventArgs e)
+    {
+        if (lstPatchScripts.SelectedItem is string script)
+            _editPatchScripts.Remove(script);
+        UpdatePatchScriptActionButtons();
+    }
+
+    private void BtnMoveScriptUp_Click(object sender, RoutedEventArgs e)
+    {
+        var idx = lstPatchScripts.SelectedIndex;
+        if (idx <= 0)
+            return;
+        _editPatchScripts.Move(idx, idx - 1);
+        lstPatchScripts.SelectedIndex = idx - 1;
+        UpdatePatchScriptActionButtons();
+    }
+
+    private void BtnMoveScriptDown_Click(object sender, RoutedEventArgs e)
+    {
+        var idx = lstPatchScripts.SelectedIndex;
+        if (idx < 0 || idx >= _editPatchScripts.Count - 1)
+            return;
+        _editPatchScripts.Move(idx, idx + 1);
+        lstPatchScripts.SelectedIndex = idx + 1;
+        UpdatePatchScriptActionButtons();
+    }
+
+    private void BtnAutoFillScripts_Click(object sender, RoutedEventArgs e)
+    {
+        var toVersionId = (cmbEditPatchTo.SelectedItem as Models.VersionInfo)?.Id;
+        if (string.IsNullOrWhiteSpace(toVersionId))
+            return;
+
+        var scripts = _versionService.GetScriptsForVersion(toVersionId)
+            .Select(name => $"{toVersionId}/{name}")
+            .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        _editPatchScripts.Clear();
+        foreach (var s in scripts)
+            _editPatchScripts.Add(s);
+    }
+
+    private async void BtnSavePatch_Click(object sender, RoutedEventArgs e)
+    {
+        var from = (cmbEditPatchFrom.SelectedItem as Models.VersionInfo)?.Id;
+        var to = (cmbEditPatchTo.SelectedItem as Models.VersionInfo)?.Id;
+
+        if (string.IsNullOrWhiteSpace(from) || string.IsNullOrWhiteSpace(to))
+        {
+            bdPatchValidation.Visibility = System.Windows.Visibility.Visible;
+            txtPatchValidationMsg.Text = "Both From and To versions are required.";
+            return;
+        }
+
+        if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase))
+        {
+            bdPatchValidation.Visibility = System.Windows.Visibility.Visible;
+            txtPatchValidationMsg.Text = "From and To versions must be different.";
+            return;
+        }
+
+        bdPatchValidation.Visibility = System.Windows.Visibility.Collapsed;
+        var scripts = _editPatchScripts.ToList();
+
+        if (_isAddingNewPatch)
+        {
+            await _versionService.AddPatchAsync(from, to);
+            await _versionService.UpdatePatchScriptsAsync(from, to, scripts);
+            await _versionService.MarkPatchManualAsync(from, to);
+        }
+        else
+        {
+            var selected = lstPatches.SelectedItem as PatchDisplayItem;
+            if (selected == null)
+                return;
+            await _versionService.UpdatePatchAsync(selected.From, selected.To, from, to);
+            await _versionService.UpdatePatchScriptsAsync(from, to, scripts);
+            if (!selected.IsAutoGenerated)
+                await _versionService.MarkPatchManualAsync(from, to);
+        }
+
         await OnMutationCompletedAsync();
         await ScanCatalogAsync();
     }
 
-    private async void BtnEditPatch_Click(object sender, RoutedEventArgs e)
+    private void BtnDiscardPatch_Click(object sender, RoutedEventArgs e)
     {
-        if (lstPatches.SelectedItem is not PatchDisplayItem selected)
-            return;
-
-        var patch = _versionService.GetAllPatches().FirstOrDefault(p =>
-            string.Equals(p.From, selected.From, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(p.To, selected.To, StringComparison.OrdinalIgnoreCase));
-        if (patch == null)
-            return;
-
-        var dialog = new PatchEditDialog(
-            _versionService.GetAllVersions(),
-            _versionService.GetAvailableScripts(),
-            _versionService.GetPatchesFolder(),
-            patch.From,
-            patch.To,
-            patch.Scripts.ToList())
-        {
-            Owner = this
-        };
-
-        if (dialog.ShowDialog() != true)
-            return;
-
-        await _versionService.UpdatePatchAsync(patch.From, patch.To, dialog.FromVersion, dialog.ToVersion);
-        await _versionService.UpdatePatchScriptsAsync(dialog.FromVersion, dialog.ToVersion, dialog.Scripts);
-        await _versionService.MarkPatchManualAsync(dialog.FromVersion, dialog.ToVersion);
-        await OnMutationCompletedAsync();
-        await ScanCatalogAsync();
+        PopulatePatchForm(lstPatches.SelectedItem as PatchDisplayItem);
     }
 
     private async void BtnDeletePatch_Click(object sender, RoutedEventArgs e)

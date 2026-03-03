@@ -1,5 +1,7 @@
 namespace MagDbPatcher.ViewModels;
 
+public sealed record VersionChainSegment(string Text, bool IsArrow);
+
 public sealed class VersionDisplayItem
 {
     public string Id { get; init; } = "";

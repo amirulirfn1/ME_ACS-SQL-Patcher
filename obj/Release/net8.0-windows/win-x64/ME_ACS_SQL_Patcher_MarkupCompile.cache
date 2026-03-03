@@ -10,11 +10,11 @@ none
 false
 TRACE;RELEASE;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\App.xaml
-71694990049
+5-1009146525
 
-56-1217065459
+54-968289517
 217-186432646
-AdminWindow.xaml;MainWindow.xaml;PatchEditDialog.xaml;SqlServerSelectDialog.xaml;Themes\Colors.xaml;Themes\Controls.xaml;VersionEditDialog.xaml;
+AdminWindow.xaml;MainWindow.xaml;SqlServerSelectDialog.xaml;Themes\Colors.xaml;Themes\Controls.xaml;
 
 False
 

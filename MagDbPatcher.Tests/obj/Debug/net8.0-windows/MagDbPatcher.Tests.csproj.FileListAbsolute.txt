@@ -173,3 +173,4 @@ C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Test
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Debug\net8.0-windows\MagDbPatcher.Tests.pdb
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Debug\net8.0-windows\MagDbPatcher.Tests.genruntimeconfig.cache
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Debug\net8.0-windows\ref\MagDbPatcher.Tests.dll
+C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\MagDbPatcher.Tests\obj\Debug\net8.0-windows\MagDbPatcher.Tests.sourcelink.json
