@@ -13,6 +13,10 @@ public class UserDialogService : IUserDialogService
     public void ShowError(string message, string title) =>
         MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
 
-    public bool Confirm(string message, string title) =>
-        MessageBox.Show(message, title, MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK;
+    public bool Confirm(string message, string title, bool useYesNo = false)
+    {
+        var buttons = useYesNo ? MessageBoxButton.YesNo : MessageBoxButton.OKCancel;
+        var result = MessageBox.Show(message, title, buttons, MessageBoxImage.Information);
+        return useYesNo ? result == MessageBoxResult.Yes : result == MessageBoxResult.OK;
+    }
 }

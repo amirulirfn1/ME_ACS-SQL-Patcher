@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Globalization;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -24,17 +23,20 @@ public partial class MainWindow : Window
     private readonly PatchStorageService _patchStorageService = new();
     private readonly IUserDialogService _dialogs = new UserDialogService();
     private readonly RunRequestBuilder _requestBuilder = new();
-    private readonly DiagnosticsComposer _diagnosticsComposer = new();
     private readonly SettingsBinder _settingsBinder = new();
     private readonly RunUiStateController _runUiStateController = new();
+    private readonly RunStateEvaluator _runStateEvaluator = new();
+    private readonly IMainRunOrchestrator _runOrchestrator;
     private readonly ObservableCollection<string> _runWarnings = new();
-    private readonly StringBuilder _logBuilder = new();
     private readonly Queue<string> _pendingLogLines = new();
+    private readonly Queue<string> _visibleLogLines = new();
+    private readonly Queue<string> _retainedLogLines = new();
     private readonly DispatcherTimer _logFlushTimer = new() { Interval = TimeSpan.FromMilliseconds(150) };
+    private const int MaxVisibleLogLines = 400;
+    private const int MaxRetainedLogLines = 4000;
 
     private AppSettings _settings = new();
     private VersionService? _versionService;
-    private PatchRunCoordinator? _runCoordinator;
     private PatchPackImportCoordinator? _patchImportCoordinator;
     private CancellationTokenSource? _runCancellation;
     private AdminWindow? _adminWindow;
@@ -46,8 +48,14 @@ public partial class MainWindow : Window
     private bool _isUiInitialized;
 
     public MainWindow()
+        : this(new MainRunOrchestrator())
+    {
+    }
+
+    internal MainWindow(IMainRunOrchestrator runOrchestrator)
     {
         InitializeComponent();
+        _runOrchestrator = runOrchestrator;
 
         DataContext = _viewModel;
 
@@ -67,14 +75,6 @@ public partial class MainWindow : Window
 
         ApplyReadyState();
         _isUiInitialized = true;
-    }
-
-    private enum StepUiState
-    {
-        Pending,
-        Ready,
-        Done,
-        NeedsAttention
     }
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -108,13 +108,10 @@ public partial class MainWindow : Window
     {
         if (_runCancellation != null)
         {
-            var answer = MessageBox.Show(
-                "A patch run is still in progress. Cancel it and close the app?",
-                "Close Application",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (answer != MessageBoxResult.Yes)
+            if (!_dialogs.Confirm(
+                    "A patch run is still in progress. Cancel it and close the app?",
+                    "Close Application",
+                    useYesNo: true))
             {
                 e.Cancel = true;
                 return;
@@ -134,34 +131,36 @@ public partial class MainWindow : Window
 
     private void ApplyReadyState()
     {
-        txtVersion.Text = "";
-        txtStatus.Text = "Ready";
-        txtResultSummary.Text = "";
-        txtLog.Text = "";
-        txtSqlTestResult.Text = "";
+        _viewModel.PatchVersionText = "";
+        _viewModel.StatusText = "Ready";
+        _viewModel.ResultSummary = "";
+        _viewModel.LogText = "";
+        _viewModel.SqlTestResultText = "";
+        _viewModel.SourceFileHintText = "";
+        _viewModel.UpgradePathText = "";
+        _visibleLogLines.Clear();
+        _retainedLogLines.Clear();
+        _pendingLogLines.Clear();
 
-        progressBar.Value = 0;
+        _viewModel.ProgressValue = 0;
         _viewModel.ClearValidation();
+        _viewModel.NotificationMessage = "";
+        _viewModel.NotificationLevel = NotificationLevel.None;
         _runWarnings.Clear();
         UpdateWarningChip(0);
         bdStatusBanner.Visibility = Visibility.Collapsed;
 
-        txtRunSummaryVersions.Text = "Versions: Select source and target versions";
-        txtRunSummaryPlan.Text = "Plan: Select versions to preview steps and script count.";
-        txtRunSummaryTemp.Text = "Temp folder: C:\\temp\\MagDbPatcher";
-        txtRunSummaryOutputAndWarnings.Text = "Output: Not generated yet";
+        _viewModel.RunSummaryVersions = "Versions: Select source and target versions";
+        _viewModel.RunSummaryPlan = "Plan: Select versions to preview steps and script count.";
+        _viewModel.RunSummaryTemp = "Temp folder: C:\\temp\\MagDbPatcher";
+        _viewModel.RunSummaryOutput = "Output: Not generated yet";
 
         btnRetryFromValidation.IsEnabled = false;
         btnCopyDiagnostics.IsEnabled = false;
         btnOpenOutputFolder.IsEnabled = false;
         btnCancel.IsEnabled = false;
 
-        txtNextAction.Text = "Next: Select a source backup file.";
-        txtPatchActionHint.Text = "Complete Step 1 to continue.";
-        SetStepStatusChip(bdStep1Status, txtStep1Status, "Pending", StepUiState.Pending);
-        SetStepStatusChip(bdStep2Status, txtStep2Status, "Pending", StepUiState.Pending);
-        SetStepStatusChip(bdStep3Status, txtStep3Status, "Pending", StepUiState.Pending);
-        SetStepStatusChip(bdStep4Status, txtStep4Status, "Pending", StepUiState.Pending);
+        ApplyGuidanceState(StepGuidanceState.Initial);
     }
 
     private void ApplySettingsToUi()
@@ -233,8 +232,8 @@ public partial class MainWindow : Window
 
         _versionService = new VersionService(normalized);
         await _versionService.LoadVersionsAsync();
+        _runOrchestrator.UpdateVersionService(_versionService);
 
-        _runCoordinator = new PatchRunCoordinator(_versionService);
         _patchImportCoordinator = new PatchPackImportCoordinator(new PatchPackService());
 
         if (closeAdminWindow && _adminWindow != null)
@@ -276,7 +275,7 @@ public partial class MainWindow : Window
     {
         if (_versionService == null)
         {
-            txtVersion.Text = "";
+            _viewModel.PatchVersionText = "";
             return;
         }
 
@@ -285,7 +284,7 @@ public partial class MainWindow : Window
             .ThenBy(v => v.Id, StringComparer.OrdinalIgnoreCase)
             .LastOrDefault();
 
-        txtVersion.Text = latest == null ? "Patch unknown" : $"Patch {latest.Id}";
+        _viewModel.PatchVersionText = latest == null ? "Patch unknown" : $"Patch {latest.Id}";
     }
 
     private void RefreshTargetVersions(string? preferredTargetId = null)
@@ -344,12 +343,12 @@ public partial class MainWindow : Window
             var totalScripts = steps.Sum(s => s.Scripts.Count);
             var segments = new List<string> { fromVersion };
             segments.AddRange(steps.Select(s => s.ToVersion));
-            txtUpgradePath.Text = $"{string.Join("  →  ", segments)}    ({steps.Count} step{(steps.Count == 1 ? "" : "s")}, {totalScripts} script{(totalScripts == 1 ? "" : "s")})";
+            _viewModel.UpgradePathText = $"{string.Join("  →  ", segments)}    ({steps.Count} step{(steps.Count == 1 ? "" : "s")}, {totalScripts} script{(totalScripts == 1 ? "" : "s")})";
             txtUpgradePath.Foreground = (Brush)FindResource("TextPrimary");
         }
         catch (Exception ex)
         {
-            txtUpgradePath.Text = $"No path available: {ex.Message}";
+            _viewModel.UpgradePathText = $"No path available: {ex.Message}";
             txtUpgradePath.Foreground = (Brush)FindResource("Error");
         }
 
@@ -371,62 +370,87 @@ public partial class MainWindow : Window
             return;
         }
 
-        var sourcePath = (cmbSourcePath.Text ?? "").Trim();
+        ApplyRunSummaryState(BuildRunSummaryState());
+        UpdateGuidanceUi();
+    }
 
-        // File hint for Step 1
-        if (string.IsNullOrWhiteSpace(sourcePath))
+    private RunSummaryState BuildRunSummaryState()
+    {
+        var sourcePath = (cmbSourcePath.Text ?? "").Trim();
+        var sourceHint = "";
+        var sourceHintKind = SourceFileHintKind.None;
+
+        if (!string.IsNullOrWhiteSpace(sourcePath) && !File.Exists(sourcePath))
         {
-            txtSourceFileHint.Text = "";
+            sourceHint = "File not found.";
+            sourceHintKind = SourceFileHintKind.Error;
         }
-        else if (!File.Exists(sourcePath))
-        {
-            txtSourceFileHint.Text = "File not found.";
-            txtSourceFileHint.Foreground = (Brush)FindResource("Error");
-        }
-        else
+        else if (!string.IsNullOrWhiteSpace(sourcePath))
         {
             var info = new FileInfo(sourcePath);
             var size = info.Length >= 1024L * 1024 * 1024
                 ? $"{info.Length / (1024.0 * 1024 * 1024):F1} GB"
                 : $"{info.Length / (1024.0 * 1024):F0} MB";
-            txtSourceFileHint.Text = $"{info.Name}  ({size})";
-            txtSourceFileHint.Foreground = (Brush)FindResource("Success");
+            sourceHint = $"{info.Name}  ({size})";
+            sourceHintKind = SourceFileHintKind.Success;
         }
 
         var fromVersion = GetSelectedVersionId(cmbFromVersion) ?? "(not selected)";
         var toVersion = GetSelectedVersionId(cmbToVersion) ?? "(not selected)";
         var tempFolder = _settings.PatchTempFolder ?? @"C:\temp\MagDbPatcher";
-
         var sqlServer = string.IsNullOrWhiteSpace(cmbSqlServer.Text) ? ".\\MAGSQL" : cmbSqlServer.Text.Trim();
-        txtRunSummaryVersions.Text = $"Versions: {fromVersion} -> {toVersion}\nSQL: {sqlServer}";
-        txtRunSummaryTemp.Text = $"Temp folder: {tempFolder}";
+        var outputText = string.IsNullOrWhiteSpace(sourcePath)
+            ? "Output: Select a source backup to preview output path"
+            : $"Output: {BuildOutputBakPath(sourcePath, toVersion)}";
+        var planText = "Plan: Select source and target versions.";
 
-        if (string.IsNullOrWhiteSpace(sourcePath))
-            txtRunSummaryOutputAndWarnings.Text = "Output: Select a source backup to preview output path";
-        else
-            txtRunSummaryOutputAndWarnings.Text = $"Output: {BuildOutputBakPath(sourcePath, toVersion)}";
-
-        if (_versionService == null || fromVersion == "(not selected)" || toVersion == "(not selected)")
+        if (_versionService != null && fromVersion != "(not selected)" && toVersion != "(not selected)")
         {
-            txtRunSummaryPlan.Text = "Plan: Select source and target versions.";
-            return;
+            try
+            {
+                var steps = _versionService.CalculateUpgradePath(fromVersion, toVersion);
+                var totalScripts = steps.Sum(s => s.Scripts.Count);
+                planText = $"Plan: {steps.Count} step(s), {totalScripts} script(s)";
+            }
+            catch (Exception ex)
+            {
+                planText = $"Plan: {ex.Message}";
+            }
         }
 
-        try
-        {
-            var steps = _versionService.CalculateUpgradePath(fromVersion, toVersion);
-            var totalScripts = steps.Sum(s => s.Scripts.Count);
-            txtRunSummaryPlan.Text = $"Plan: {steps.Count} step(s), {totalScripts} script(s)";
-        }
-        catch (Exception ex)
-        {
-            txtRunSummaryPlan.Text = $"Plan: {ex.Message}";
-        }
+        return new RunSummaryState(
+            SourceFileHint: sourceHint,
+            SourceFileHintKind: sourceHintKind,
+            VersionsText: $"Versions: {fromVersion} -> {toVersion}\nSQL: {sqlServer}",
+            TempFolderText: $"Temp folder: {tempFolder}",
+            OutputText: outputText,
+            PlanText: planText);
+    }
 
-        UpdateGuidanceUi();
+    private void ApplyRunSummaryState(RunSummaryState state)
+    {
+        _viewModel.SourceFileHintText = state.SourceFileHint;
+        _viewModel.SourceFileHintKind = state.SourceFileHintKind;
+        txtSourceFileHint.Foreground = state.SourceFileHintKind switch
+        {
+            SourceFileHintKind.Error => (Brush)FindResource("Error"),
+            SourceFileHintKind.Success => (Brush)FindResource("Success"),
+            _ => (Brush)FindResource("TextMuted")
+        };
+
+        _viewModel.RunSummaryVersions = state.VersionsText;
+        _viewModel.RunSummaryTemp = state.TempFolderText;
+        _viewModel.RunSummaryOutput = state.OutputText;
+        _viewModel.RunSummaryPlan = state.PlanText;
     }
 
     private void UpdateGuidanceUi()
+    {
+        var state = EvaluateGuidanceState();
+        ApplyGuidanceState(state);
+    }
+
+    private StepGuidanceState EvaluateGuidanceState()
     {
         var sourcePath = (cmbSourcePath.Text ?? "").Trim();
         var fromVersion = GetSelectedVersionId(cmbFromVersion);
@@ -439,8 +463,6 @@ public partial class MainWindow : Window
 
         var sourceExists = !string.IsNullOrWhiteSpace(sourcePath) && File.Exists(sourcePath);
         var sourcePathEntered = !string.IsNullOrWhiteSpace(sourcePath);
-        var step1State = sourceExists ? StepUiState.Done : (sourcePathEntered ? StepUiState.NeedsAttention : StepUiState.Pending);
-
         var versionSelectionPresent = !string.IsNullOrWhiteSpace(fromVersion) && !string.IsNullOrWhiteSpace(toVersion);
         var versionPathValid = false;
         if (versionSelectionPresent && _versionService != null)
@@ -456,92 +478,72 @@ public partial class MainWindow : Window
             }
         }
 
-        var step2State = versionPathValid ? StepUiState.Done : (versionSelectionPresent ? StepUiState.NeedsAttention : StepUiState.Pending);
-
         var localSql = !string.IsNullOrWhiteSpace(settings.Server) && LocalSqlValidator.IsLocalServer(settings.Server);
         var hasSqlUser = settings.AuthMode != SqlAuthMode.SqlLogin || !string.IsNullOrWhiteSpace(settings.Username);
         var hasSqlPassword = settings.AuthMode != SqlAuthMode.SqlLogin || !string.IsNullOrWhiteSpace(settings.Password);
-        var basicConnectionReady = localSql && hasSqlUser && hasSqlPassword;
-        var step3State = _sqlConnectionTestPassed && basicConnectionReady
-            ? StepUiState.Done
-            : (basicConnectionReady ? StepUiState.Ready : StepUiState.NeedsAttention);
 
-        var runReady = sourceExists && versionPathValid && _sqlConnectionTestPassed && basicConnectionReady && _runCoordinator != null;
-        if (runReady && _runCoordinator != null)
+        var state = _runStateEvaluator.Evaluate(new RunStateInput(
+            SourcePathEntered: sourcePathEntered,
+            SourceExists: sourceExists,
+            VersionSelectionPresent: versionSelectionPresent,
+            VersionPathValid: versionPathValid,
+            LocalSqlServer: localSql,
+            HasSqlUser: hasSqlUser,
+            HasSqlPassword: hasSqlPassword,
+            SqlConnectionTestPassed: _sqlConnectionTestPassed,
+            RunEngineReady: _runOrchestrator.IsReady));
+
+        if (state.RunReady)
         {
-            runReady = ValidateCurrentRequest(requirePassword: true).IsValid;
+            var validation = ValidateCurrentRequest(requirePassword: true);
+            if (!validation.IsValid)
+            {
+                return state with
+                {
+                    Step4State = RunStepState.NeedsAttention,
+                    RunReady = false,
+                    PatchHintText = "Review validation issues before starting."
+                };
+            }
         }
 
-        var step4State = runReady
-            ? StepUiState.Ready
-            : ((sourceExists || versionSelectionPresent || basicConnectionReady) ? StepUiState.Pending : StepUiState.Pending);
+        return state;
+    }
 
-        SetStepStatusChip(bdStep1Status, txtStep1Status, GetStepText(step1State), step1State);
-        SetStepStatusChip(bdStep2Status, txtStep2Status, GetStepText(step2State), step2State);
-        SetStepStatusChip(bdStep3Status, txtStep3Status, GetStepText(step3State), step3State);
-        SetStepStatusChip(bdStep4Status, txtStep4Status, runReady ? "Ready" : "Pending", step4State);
+    private void ApplyGuidanceState(StepGuidanceState state)
+    {
+        SetStepStatusChip(bdStep1Status, txtStep1Status, RunStateEvaluator.GetStepText(state.Step1State), state.Step1State);
+        SetStepStatusChip(bdStep2Status, txtStep2Status, RunStateEvaluator.GetStepText(state.Step2State), state.Step2State);
+        SetStepStatusChip(bdStep3Status, txtStep3Status, RunStateEvaluator.GetStepText(state.Step3State), state.Step3State);
+        SetStepStatusChip(bdStep4Status, txtStep4Status, state.RunReady ? "Ready" : RunStateEvaluator.GetStepText(state.Step4State), state.Step4State);
 
-        txtNextAction.Text = GetNextActionText(sourceExists, versionPathValid, basicConnectionReady, _sqlConnectionTestPassed);
-        txtPatchActionHint.Text = runReady
-            ? "Ready to run. Click Start Patch."
-            : GetPatchHint(sourceExists, versionPathValid, basicConnectionReady, _sqlConnectionTestPassed);
+        _viewModel.NextActionText = state.NextActionText;
+        _viewModel.PatchActionHint = state.RunReady ? "Ready to run. Click Start Patch." : state.PatchHintText;
 
         if (_runCancellation == null)
-            btnPatch.IsEnabled = runReady;
+            btnPatch.IsEnabled = state.RunReady;
     }
 
     private static string BuildSqlSignature(SqlConnectionSettings settings)
         => $"{settings.Server}|{settings.AuthMode}|{settings.Username}|{settings.Password}";
 
-    private static string GetStepText(StepUiState state) => state switch
-    {
-        StepUiState.Done => "Done",
-        StepUiState.Ready => "Ready",
-        StepUiState.NeedsAttention => "Needs Attention",
-        _ => "Pending"
-    };
-
-    private static string GetNextActionText(bool sourceDone, bool versionsDone, bool basicConnectionReady, bool sqlTestPassed)
-    {
-        if (!sourceDone)
-            return "Next: Select a source backup file.";
-        if (!versionsDone)
-            return "Next: Choose the target version.";
-        if (!basicConnectionReady)
-            return "Next: Complete SQL connection details.";
-        if (!sqlTestPassed)
-            return "Next: Click Test SQL connection.";
-        return "Next: Click Start Patch.";
-    }
-
-    private static string GetPatchHint(bool sourceDone, bool versionsDone, bool basicConnectionReady, bool sqlTestPassed)
-    {
-        if (!sourceDone)
-            return "Complete Step 1 to continue.";
-        if (!versionsDone)
-            return "Complete Step 2 to continue.";
-        if (!basicConnectionReady || !sqlTestPassed)
-            return "Complete Step 3 (Test SQL) to continue.";
-        return "Review details and continue.";
-    }
-
-    private void SetStepStatusChip(Border border, TextBlock textBlock, string text, StepUiState state)
+    private void SetStepStatusChip(Border border, TextBlock textBlock, string text, RunStepState state)
     {
         textBlock.Text = text;
 
         switch (state)
         {
-            case StepUiState.Done:
+            case RunStepState.Done:
                 border.Background = (Brush)FindResource("SuccessSoft");
                 border.BorderBrush = (Brush)FindResource("Success");
                 textBlock.Foreground = (Brush)FindResource("Success");
                 break;
-            case StepUiState.Ready:
+            case RunStepState.Ready:
                 border.Background = (Brush)FindResource("InfoSoft");
                 border.BorderBrush = (Brush)FindResource("Info");
                 textBlock.Foreground = (Brush)FindResource("Info");
                 break;
-            case StepUiState.NeedsAttention:
+            case RunStepState.NeedsAttention:
                 border.Background = (Brush)FindResource("WarningSoft");
                 border.BorderBrush = (Brush)FindResource("Warning");
                 textBlock.Foreground = (Brush)FindResource("Warning");
@@ -566,17 +568,21 @@ public partial class MainWindow : Window
     }
 
     private void SetBanner(NotificationLevel level, string message, bool warningBanner = false)
+        => SetBanner(new NotificationState(level, message, warningBanner));
+
+    private void SetBanner(NotificationState state)
     {
-        txtNotification.Text = message;
+        _viewModel.NotificationMessage = state.Message;
+        _viewModel.NotificationLevel = state.Level;
         bdStatusBanner.Visibility = Visibility.Visible;
 
-        if (warningBanner)
+        if (state.WarningBanner)
         {
             bdStatusBanner.Style = (Style)FindResource("StatusBannerWarning");
             return;
         }
 
-        switch (level)
+        switch (state.Level)
         {
             case NotificationLevel.Success:
                 bdStatusBanner.Style = (Style)FindResource("StatusBannerSuccess");
@@ -642,16 +648,8 @@ public partial class MainWindow : Window
 
     private (bool IsValid, PatchRunRequest Request, List<ValidationIssue> Issues) ValidateCurrentRequest(bool requirePassword)
     {
-        if (_runCoordinator == null)
-        {
-            return (false, new PatchRunRequest(), new List<ValidationIssue>
-            {
-                new() { Field = "Application", Message = "Patching service is not initialized yet." }
-            });
-        }
-
         var request = BuildRunRequest();
-        var issues = _runCoordinator.Validate(request, requirePassword).ToList();
+        var issues = _runOrchestrator.Validate(request, requirePassword).ToList();
         return (issues.Count == 0, request, issues);
     }
 
@@ -673,10 +671,30 @@ public partial class MainWindow : Window
 
         while (_pendingLogLines.Count > 0)
         {
-            _logBuilder.AppendLine(_pendingLogLines.Dequeue());
+            var line = _pendingLogLines.Dequeue();
+            EnqueueWithCap(_retainedLogLines, line, MaxRetainedLogLines);
+            EnqueueWithCap(_visibleLogLines, line, MaxVisibleLogLines);
         }
 
-        txtLog.Text = _logBuilder.ToString();
+        _viewModel.LogText = string.Join(Environment.NewLine, _visibleLogLines);
+        txtLog.ScrollToEnd();
+    }
+
+    private static void EnqueueWithCap(Queue<string> queue, string line, int maxCount)
+    {
+        queue.Enqueue(line);
+        while (queue.Count > maxCount)
+            queue.Dequeue();
+    }
+
+    private bool HasRetainedLogs() => _retainedLogLines.Count > 0;
+
+    private void ClearLogBuffers()
+    {
+        _pendingLogLines.Clear();
+        _visibleLogLines.Clear();
+        _retainedLogLines.Clear();
+        _viewModel.LogText = string.Empty;
     }
 
     private void ApplyRunUiLock(bool isRunning)
@@ -741,18 +759,18 @@ public partial class MainWindow : Window
     private string BuildPatchPlanText()
     {
         var request = BuildRunRequest();
-        return _diagnosticsComposer.BuildPatchPlan(request, _versionService);
+        return _runOrchestrator.BuildPatchPlan(request);
     }
 
     private string BuildDiagnosticsText()
     {
         FlushPendingLogLines();
-        return _diagnosticsComposer.BuildDiagnostics(
-            txtStatus.Text,
-            txtResultSummary.Text,
+        return _runOrchestrator.BuildDiagnostics(
+            _viewModel.StatusText,
+            _viewModel.ResultSummary,
             _runWarnings,
-            _logBuilder.ToString(),
-            BuildPatchPlanText(),
+            _retainedLogLines,
+            BuildRunRequest(),
             _versionService?.NonFatalDiagnostics);
     }
 
@@ -903,43 +921,43 @@ public partial class MainWindow : Window
 
     private async void BtnTestSql_Click(object sender, RoutedEventArgs e)
     {
-        if (_runCoordinator == null)
+        if (!_runOrchestrator.IsReady)
             return;
 
         var settings = BuildSqlConnectionSettings();
         if (string.IsNullOrWhiteSpace(settings.Server))
         {
-            txtSqlTestResult.Text = "Enter a SQL Server value.";
+            _viewModel.SqlTestResultText = "Enter a SQL Server value.";
             txtSqlTestResult.Foreground = (Brush)FindResource("Error");
             return;
         }
 
         if (!LocalSqlValidator.IsLocalServer(settings.Server))
         {
-            txtSqlTestResult.Text = "Only local SQL Server instances are allowed.";
+            _viewModel.SqlTestResultText = "Only local SQL Server instances are allowed.";
             txtSqlTestResult.Foreground = (Brush)FindResource("Error");
             return;
         }
 
         btnTestSql.IsEnabled = false;
-        txtSqlTestResult.Text = "Testing...";
+        _viewModel.SqlTestResultText = "Testing...";
         txtSqlTestResult.Foreground = (Brush)FindResource("TextMuted");
 
         try
         {
-            var ok = await _runCoordinator.TestConnectionAsync(settings);
+            var ok = await _runOrchestrator.TestConnectionAsync(settings);
             if (ok)
             {
                 _sqlConnectionTestPassed = true;
                 _lastSqlTestSignature = BuildSqlSignature(settings);
-                txtSqlTestResult.Text = "Connection successful.";
+                _viewModel.SqlTestResultText = "Connection successful.";
                 txtSqlTestResult.Foreground = (Brush)FindResource("Success");
                 SetBanner(NotificationLevel.Success, "SQL connection successful.");
             }
             else
             {
                 _sqlConnectionTestPassed = false;
-                txtSqlTestResult.Text = "Failed to connect.";
+                _viewModel.SqlTestResultText = "Failed to connect.";
                 txtSqlTestResult.Foreground = (Brush)FindResource("Error");
                 SetBanner(NotificationLevel.Error, "SQL connection failed. Check server/auth settings.");
             }
@@ -947,7 +965,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             _sqlConnectionTestPassed = false;
-            txtSqlTestResult.Text = ex.Message;
+            _viewModel.SqlTestResultText = ex.Message;
             txtSqlTestResult.Foreground = (Brush)FindResource("Error");
             SetBanner(NotificationLevel.Error, "SQL connection test failed.");
         }
@@ -1116,7 +1134,7 @@ public partial class MainWindow : Window
 
     private async void BtnPatch_Click(object sender, RoutedEventArgs e)
     {
-        if (_runCoordinator == null)
+        if (!_runOrchestrator.IsReady)
             return;
 
         var validation = ValidateCurrentRequest(requirePassword: true);
@@ -1139,29 +1157,23 @@ public partial class MainWindow : Window
         }
 
         var planPreview = BuildPatchPlanText();
-        var decision = MessageBox.Show(
-            $"{planPreview}\n\nStart patch now?",
-            "Confirm Patch Run",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Information);
-
-        if (decision != MessageBoxResult.OK)
+        if (!_dialogs.Confirm(
+                $"{planPreview}\n\nStart patch now?",
+                "Confirm Patch Run"))
             return;
 
         RememberRecentBackup(validation.Request.SourceBakPath);
         _lastOutputPath = validation.Request.OutputBakPath;
 
-        _logBuilder.Clear();
-        _pendingLogLines.Clear();
+        ClearLogBuffers();
         _logFlushTimer.Stop();
-        txtLog.Text = "";
         _runWarnings.Clear();
         UpdateWarningChip(0);
         expRunWarnings.IsExpanded = false;
 
-        txtStatus.Text = "Starting...";
-        txtResultSummary.Text = "";
-        progressBar.Value = 0;
+        _viewModel.StatusText = "Starting...";
+        _viewModel.ResultSummary = "";
+        _viewModel.ProgressValue = 0;
         btnOpenOutputFolder.IsEnabled = false;
         btnCopyDiagnostics.IsEnabled = false;
 
@@ -1174,14 +1186,14 @@ public partial class MainWindow : Window
         {
             var progress = new Progress<PatchRunProgress>(p =>
             {
-                progressBar.Value = p.Percent;
-                txtStatus.Text = p.Message;
+                _viewModel.ProgressValue = p.Percent;
+                _viewModel.StatusText = p.Message;
             });
 
             var logProgress = new Progress<string>(AppendLogLine);
-            var result = await _runCoordinator.RunAsync(validation.Request, progress, logProgress, _runCancellation.Token);
+            var result = await _runOrchestrator.RunAsync(validation.Request, progress, logProgress, _runCancellation.Token);
 
-            txtResultSummary.Text = result.Summary;
+            _viewModel.ResultSummary = result.Summary;
             _lastOutputPath = result.OutputPath;
 
             _runWarnings.Clear();
@@ -1195,10 +1207,10 @@ public partial class MainWindow : Window
 
             if (result.Success)
             {
-                txtStatus.Text = "Completed";
-                progressBar.Value = 100;
+                _viewModel.StatusText = "Completed";
+                _viewModel.ProgressValue = 100;
                 btnOpenOutputFolder.IsEnabled = !string.IsNullOrWhiteSpace(result.OutputPath);
-                btnCopyDiagnostics.IsEnabled = result.WarningCount > 0 || _logBuilder.Length > 0;
+                btnCopyDiagnostics.IsEnabled = result.WarningCount > 0 || HasRetainedLogs();
                 if (result.WarningThresholdExceeded)
                 {
                     SetBanner(
@@ -1215,21 +1227,21 @@ public partial class MainWindow : Window
             }
             else if (result.Cancelled)
             {
-                txtStatus.Text = "Cancelled";
-                btnCopyDiagnostics.IsEnabled = _logBuilder.Length > 0 || result.WarningCount > 0;
+                _viewModel.StatusText = "Cancelled";
+                btnCopyDiagnostics.IsEnabled = HasRetainedLogs() || result.WarningCount > 0;
                 SetBanner(NotificationLevel.Info, "Patch run cancelled.");
             }
             else
             {
-                txtStatus.Text = "Failed";
+                _viewModel.StatusText = "Failed";
                 btnCopyDiagnostics.IsEnabled = true;
                 SetBanner(NotificationLevel.Error, "Patch failed. Review diagnostics.");
             }
         }
         catch (Exception ex)
         {
-            txtStatus.Text = "Failed";
-            txtResultSummary.Text = ex.Message;
+            _viewModel.StatusText = "Failed";
+            _viewModel.ResultSummary = ex.Message;
             btnCopyDiagnostics.IsEnabled = true;
             SetBanner(NotificationLevel.Error, "Patch failed unexpectedly.");
         }

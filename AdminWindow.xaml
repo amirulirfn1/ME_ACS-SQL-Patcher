@@ -4,8 +4,8 @@
         Title="Admin Tools"
         Width="1200"
         Height="820"
-        MinWidth="1080"
-        MinHeight="700"
+        MinWidth="940"
+        MinHeight="620"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BgPrimary}">
     <Grid Margin="24">
@@ -35,7 +35,7 @@
                 <TextBlock x:Name="txtFolderStatus" Grid.Row="2" FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,4,0,0"/>
                 <WrapPanel Grid.Row="3" Margin="0,10,0,0">
                     <Button x:Name="btnChangeCatalogFolder" Content="Change" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="72" Click="BtnChangeCatalogFolder_Click"/>
-                    <Button x:Name="btnResetCatalogFolder" Content="Reset" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="72" Click="BtnResetCatalogFolder_Click"/>
+                    <Button x:Name="btnResetCatalogFolder" Content="Reset" AutomationProperties.Name="Reset patches folder" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="72" Click="BtnResetCatalogFolder_Click"/>
                     <Button x:Name="btnOpenCatalogFolder" Content="Open" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="72" Click="BtnOpenCatalogFolder_Click"/>
                     <Button x:Name="btnValidateCatalog" Content="Validate" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" MinWidth="78" Click="BtnValidateCatalog_Click"/>
                 </WrapPanel>
@@ -54,7 +54,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="btnScanCatalog" Content="Scan Patches Folder" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" Click="BtnScanCatalog_Click"/>
                         <Button x:Name="btnCreateMissingLinks" Content="Create Missing Links" Style="{StaticResource BtnSecondary}" Margin="0,0,8,0" Click="BtnCreateMissingLinks_Click"/>
-                        <Button x:Name="btnApplyCatalog" Content="Apply Changes" Style="{StaticResource BtnPrimary}" Click="BtnApplyCatalog_Click"/>
+                        <Button x:Name="btnApplyCatalog" Content="Apply Changes" AutomationProperties.Name="Apply staged catalog changes" Style="{StaticResource BtnPrimary}" Click="BtnApplyCatalog_Click"/>
                     </StackPanel>
 
                     <Grid Grid.Row="1" Margin="0,12,0,0">
@@ -186,6 +186,7 @@
                                 </Grid.RowDefinitions>
                                 <TextBlock Text="Versions" Style="{StaticResource SectionHeaderText}"/>
                                 <ListBox x:Name="lstVersions"
+                                         AutomationProperties.Name="Version list"
                                          Grid.Row="1"
                                          Margin="0,12,0,12"
                                          BorderBrush="{StaticResource BorderColor}"
@@ -358,7 +359,8 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <TextBlock Text="Patch Definitions" Style="{StaticResource SectionHeaderText}"/>
-                            <ListBox x:Name="lstPatches"
+                                <ListBox x:Name="lstPatches"
+                                     AutomationProperties.Name="Patch definition list"
                                      Grid.Row="1"
                                      Margin="0,12,0,12"
                                      BorderBrush="{StaticResource BorderColor}"

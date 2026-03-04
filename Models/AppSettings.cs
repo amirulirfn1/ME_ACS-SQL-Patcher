@@ -14,7 +14,6 @@ public class AppSettings
     public string? LastSqlServer { get; set; }
     public string? LastOutputFolder { get; set; }
     public List<string> RecentBackupFiles { get; set; } = new();
-    public bool ShowAdminTools { get; set; } = false;
     public string? LastImportedPatchPack { get; set; }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

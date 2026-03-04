@@ -1,5 +1,6 @@
 using System.Text.Json;
 using MagDbPatcher.Models;
+using MagDbPatcher.Services;
 using Xunit;
 
 namespace MagDbPatcher.Tests;
@@ -7,7 +8,7 @@ namespace MagDbPatcher.Tests;
 public class AppSettingsTests
 {
     [Fact]
-    public void AppSettings_Deserializes_ShowAdminTools_FromLegacyJson()
+    public void AppSettings_IgnoresLegacyUnknownProperties()
     {
         var json = """
                    {
@@ -20,7 +21,25 @@ public class AppSettingsTests
         var settings = JsonSerializer.Deserialize<AppSettings>(json, options);
 
         Assert.NotNull(settings);
-        Assert.True(settings!.ShowAdminTools);
         Assert.Equal(".\\MAGSQL", settings.LastSqlServer);
+    }
+
+    [Fact]
+    public async Task LoadAsync_MalformedJson_ReturnsDefaults_AndLogsWarning()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "MagDbPatcher.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var settingsPath = Path.Combine(root, "settings.json");
+        await File.WriteAllTextAsync(settingsPath, "{ not-valid-json");
+
+        var logs = new List<string>();
+        var service = new AppSettingsService(settingsPath, (message, ex) => logs.Add($"{message}|{ex?.GetType().Name}"));
+
+        var loaded = await service.LoadAsync();
+
+        Assert.NotNull(loaded);
+        Assert.Empty(loaded.RecentBackupFiles);
+        Assert.Single(logs);
+        Assert.Contains("Falling back to defaults", logs[0], StringComparison.OrdinalIgnoreCase);
     }
 }

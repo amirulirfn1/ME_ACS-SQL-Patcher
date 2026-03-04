@@ -31,7 +31,6 @@ public sealed class SettingsBinder
             LastSqlServer = input.LastSqlServer,
             LastOutputFolder = input.LastOutputFolder,
             RecentBackupFiles = input.RecentBackupFiles.ToList(),
-            ShowAdminTools = input.Existing.ShowAdminTools,
             LastImportedPatchPack = input.LastImportedPatchPack,
             SqlAuthMode = input.SqlAuthMode,
             SqlUsername = input.SqlAuthMode == SqlAuthMode.SqlLogin ? input.SqlUsername : null

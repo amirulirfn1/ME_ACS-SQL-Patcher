@@ -289,12 +289,10 @@ C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\bin\Release\net8.
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\ME_ACS_SQL_Patcher.csproj.AssemblyReference.cache
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\AdminWindow.baml
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\MainWindow.baml
-C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\SqlServerSelectDialog.baml
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\Themes\Colors.baml
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\Themes\Controls.baml
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\AdminWindow.g.cs
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\MainWindow.g.cs
-C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\SqlServerSelectDialog.g.cs
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\App.g.cs
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\ME_ACS_SQL_Patcher_MarkupCompile.cache
 C:\Users\SupN\Desktop\Amirul\Boring Project\ME_ACS SQL Patcher\obj\Release\net8.0-windows\win-x64\ME_ACS_SQL_Patcher_MarkupCompile.lref

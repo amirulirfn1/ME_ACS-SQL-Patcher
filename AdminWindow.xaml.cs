@@ -7,6 +7,7 @@ using MagDbPatcher.Infrastructure;
 using MagDbPatcher.Models;
 using MagDbPatcher.Services;
 using MagDbPatcher.ViewModels;
+using MagDbPatcher.Workflows;
 using Microsoft.Win32;
 
 namespace MagDbPatcher;
@@ -21,8 +22,9 @@ public partial class AdminWindow : Window
     private readonly Func<Task>? _persistSettingsAsync;
     private readonly Func<VersionService?>? _getVersionService;
 
-    private readonly IPatchCatalogService _catalogService = new PatchCatalogService();
+    private readonly IAdminCatalogOrchestrator _catalogOrchestrator;
     private readonly AdminUiStateController _uiStateController = new();
+    private readonly IUserDialogService _dialogs = new UserDialogService();
 
     private readonly ObservableCollection<VersionDisplayItem> _versions = new();
     private readonly ObservableCollection<PatchDisplayItem> _patches = new();
@@ -45,7 +47,8 @@ public partial class AdminWindow : Window
         Func<string, Task>? setPatchesFolderAsync = null,
         Func<Task<string>>? resetPatchesFolderAsync = null,
         Func<Task>? persistSettingsAsync = null,
-        Func<VersionService?>? getVersionService = null)
+        Func<VersionService?>? getVersionService = null,
+        IAdminCatalogOrchestrator? catalogOrchestrator = null)
     {
         _versionService = versionService;
         _onDataChanged = onDataChanged;
@@ -54,6 +57,7 @@ public partial class AdminWindow : Window
         _resetPatchesFolderAsync = resetPatchesFolderAsync;
         _persistSettingsAsync = persistSettingsAsync;
         _getVersionService = getVersionService;
+        _catalogOrchestrator = catalogOrchestrator ?? new AdminCatalogOrchestrator();
 
         InitializeComponent();
 
@@ -325,7 +329,7 @@ public partial class AdminWindow : Window
     private async Task ScanCatalogAsync()
     {
         var folder = txtActivePatchesFolder.Text.Trim();
-        _librarySnapshot = await _catalogService.ScanAsync(folder);
+        _librarySnapshot = await _catalogOrchestrator.ScanAsync(folder);
         RenderLibrarySnapshot(_librarySnapshot);
     }
 
@@ -527,14 +531,12 @@ public partial class AdminWindow : Window
             PatchLinks = _stagedLinkMutations.ToList()
         };
 
-        var snapshot = await _catalogService.ApplyAsync(folder, mutation);
+        var snapshot = await _catalogOrchestrator.ApplyAsync(folder, mutation);
         if (snapshot.Validation.HasErrors)
         {
-            MessageBox.Show(
+            _dialogs.ShowWarning(
                 "Applied changes but validation still has errors. Review folder/scripts before running patches.",
-                "Patch Library",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                "Patch Library");
         }
 
         _stagedLinkMutations.Clear();
@@ -596,7 +598,7 @@ public partial class AdminWindow : Window
         var folder = txtActivePatchesFolder.Text.Trim();
         if (!Directory.Exists(folder))
         {
-            MessageBox.Show("Patches folder does not exist.", "Open Folder", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialogs.ShowWarning("Patches folder does not exist.", "Open Folder");
             return;
         }
 
@@ -609,7 +611,7 @@ public partial class AdminWindow : Window
 
     private async void BtnValidateCatalog_Click(object sender, RoutedEventArgs e)
     {
-        var validation = await _catalogService.ValidateAsync(txtActivePatchesFolder.Text.Trim());
+        var validation = await _catalogOrchestrator.ValidateAsync(txtActivePatchesFolder.Text.Trim());
         var bannerStyle = validation.HasErrors ? "StatusBannerError"
             : validation.Warnings.Count > 0 ? "StatusBannerWarning"
             : "StatusBannerSuccess";
@@ -723,13 +725,10 @@ public partial class AdminWindow : Window
         if (lstVersions.SelectedItem is not VersionDisplayItem selected)
             return;
 
-        var result = MessageBox.Show(
-            $"Delete version '{selected.Id}' and related patches?",
-            "Delete Version",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result != MessageBoxResult.Yes)
+        if (!_dialogs.Confirm(
+                $"Delete version '{selected.Id}' and related patches?",
+                "Delete Version",
+                useYesNo: true))
             return;
 
         await _versionService.DeleteVersionAsync(selected.Id);
@@ -780,13 +779,10 @@ public partial class AdminWindow : Window
         if (lstVersions.SelectedItem is not VersionDisplayItem selectedVersion || lstScripts.SelectedItem is not string scriptName)
             return;
 
-        var result = MessageBox.Show(
-            $"Remove script '{scriptName}' from version '{selectedVersion.Id}'?",
-            "Remove Script",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result != MessageBoxResult.Yes)
+        if (!_dialogs.Confirm(
+                $"Remove script '{scriptName}' from version '{selectedVersion.Id}'?",
+                "Remove Script",
+                useYesNo: true))
             return;
 
         await _versionService.RemoveScriptFromVersionAsync(selectedVersion.Id, scriptName);
@@ -939,13 +935,10 @@ public partial class AdminWindow : Window
         if (lstPatches.SelectedItem is not PatchDisplayItem selected)
             return;
 
-        var result = MessageBox.Show(
-            $"Delete patch '{selected.From} -> {selected.To}'?",
-            "Delete Patch",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result != MessageBoxResult.Yes)
+        if (!_dialogs.Confirm(
+                $"Delete patch '{selected.From} -> {selected.To}'?",
+                "Delete Patch",
+                useYesNo: true))
             return;
 
         await _versionService.DeletePatchAsync(selected.From, selected.To);

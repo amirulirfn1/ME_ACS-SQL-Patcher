@@ -31,8 +31,7 @@ public class InfrastructureRefactorTests
             Existing = new AppSettings
             {
                 WarningThreshold = 0,
-                PatchErrorMode = PatchErrorMode.WarnAndContinue,
-                ShowAdminTools = true
+                PatchErrorMode = PatchErrorMode.WarnAndContinue
             },
             PatchesFolder = @"C:\patches",
             LastSqlServer = @".\MAGSQL",
@@ -42,7 +41,6 @@ public class InfrastructureRefactorTests
         });
 
         Assert.Equal(10, result.WarningThreshold);
-        Assert.True(result.ShowAdminTools);
         Assert.Equal(@".\MAGSQL", result.LastSqlServer);
         Assert.Null(result.SqlUsername);
     }

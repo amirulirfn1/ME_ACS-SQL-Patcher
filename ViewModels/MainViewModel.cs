@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using MagDbPatcher.Infrastructure;
 using MagDbPatcher.Models;
 
 namespace MagDbPatcher.ViewModels;
@@ -18,6 +19,17 @@ public sealed class MainViewModel : BindableBase
     private string _diagnosticsText = "";
     private string _resultSummary = "";
     private bool _canRetry;
+    private string _patchVersionText = "";
+    private string _nextActionText = "Next: Select a source backup file.";
+    private string _patchActionHint = "Complete Step 1 to continue.";
+    private string _runSummaryVersions = "Versions: Select source and target versions";
+    private string _runSummaryPlan = "Plan: Select versions to preview steps and script count.";
+    private string _runSummaryTemp = @"Temp folder: C:\temp\MagDbPatcher";
+    private string _runSummaryOutput = "Output: Not generated yet";
+    private string _sourceFileHintText = "";
+    private SourceFileHintKind _sourceFileHintKind;
+    private string _sqlTestResultText = "";
+    private string _upgradePathText = "";
 
     public SqlConnectionViewModel Sql { get; } = new();
     public AdminToolsViewModel Admin { get; } = new();
@@ -102,6 +114,72 @@ public sealed class MainViewModel : BindableBase
     {
         get => _canRetry;
         set => SetProperty(ref _canRetry, value);
+    }
+
+    public string PatchVersionText
+    {
+        get => _patchVersionText;
+        set => SetProperty(ref _patchVersionText, value);
+    }
+
+    public string NextActionText
+    {
+        get => _nextActionText;
+        set => SetProperty(ref _nextActionText, value);
+    }
+
+    public string PatchActionHint
+    {
+        get => _patchActionHint;
+        set => SetProperty(ref _patchActionHint, value);
+    }
+
+    public string RunSummaryVersions
+    {
+        get => _runSummaryVersions;
+        set => SetProperty(ref _runSummaryVersions, value);
+    }
+
+    public string RunSummaryPlan
+    {
+        get => _runSummaryPlan;
+        set => SetProperty(ref _runSummaryPlan, value);
+    }
+
+    public string RunSummaryTemp
+    {
+        get => _runSummaryTemp;
+        set => SetProperty(ref _runSummaryTemp, value);
+    }
+
+    public string RunSummaryOutput
+    {
+        get => _runSummaryOutput;
+        set => SetProperty(ref _runSummaryOutput, value);
+    }
+
+    public string SourceFileHintText
+    {
+        get => _sourceFileHintText;
+        set => SetProperty(ref _sourceFileHintText, value);
+    }
+
+    public SourceFileHintKind SourceFileHintKind
+    {
+        get => _sourceFileHintKind;
+        set => SetProperty(ref _sourceFileHintKind, value);
+    }
+
+    public string SqlTestResultText
+    {
+        get => _sqlTestResultText;
+        set => SetProperty(ref _sqlTestResultText, value);
+    }
+
+    public string UpgradePathText
+    {
+        get => _upgradePathText;
+        set => SetProperty(ref _upgradePathText, value);
     }
 
     public void Log(string message)

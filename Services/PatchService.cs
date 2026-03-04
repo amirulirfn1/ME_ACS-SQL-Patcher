@@ -40,11 +40,11 @@ public class PatchService
                 Directory.CreateDirectory(tempFolder);
             }
 
-            CleanupStaleTempFiles(tempFolder);
+            await CleanupStaleTempFilesAsync(tempFolder, cancellationToken);
 
             _progress.Report((5, "Copying backup to temp location..."));
             tempBakPath = Path.Combine(tempFolder, $"source_{Guid.NewGuid():N}.bak");
-            File.Copy(sourceBakPath, tempBakPath, overwrite: true);
+            await CopyFileAsync(sourceBakPath, tempBakPath, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
             tempOutputPath = Path.Combine(tempFolder, $"output_{Guid.NewGuid():N}.bak");
@@ -133,7 +133,7 @@ public class PatchService
             cancellationToken.ThrowIfCancellationRequested();
 
             _progress.Report((92, "Copying to output location..."));
-            File.Copy(tempOutputPath, outputBakPath, overwrite: true);
+            await CopyFileAsync(tempOutputPath, outputBakPath, cancellationToken);
 
             _progress.Report((95, "Cleaning up..."));
             await _sqlService.DropDatabaseAsync(tempDbName, CancellationToken.None);
@@ -158,29 +158,60 @@ public class PatchService
         }
     }
 
-    private void CleanupStaleTempFiles(string tempFolder)
+    private async Task CleanupStaleTempFilesAsync(string tempFolder, CancellationToken cancellationToken)
     {
         try
         {
-            var cutoff = DateTime.UtcNow.AddHours(-6);
-            var staleFiles = Directory.GetFiles(tempFolder, "*.bak")
-                .Where(path =>
-                    Path.GetFileName(path).StartsWith("source_", StringComparison.OrdinalIgnoreCase) ||
-                    Path.GetFileName(path).StartsWith("output_", StringComparison.OrdinalIgnoreCase));
-
-            foreach (var file in staleFiles)
+            await Task.Run(() =>
             {
-                if (File.GetLastWriteTimeUtc(file) >= cutoff)
-                    continue;
+                var cutoff = DateTime.UtcNow.AddHours(-6);
+                var staleFiles = Directory.GetFiles(tempFolder, "*.bak")
+                    .Where(path =>
+                        Path.GetFileName(path).StartsWith("source_", StringComparison.OrdinalIgnoreCase) ||
+                        Path.GetFileName(path).StartsWith("output_", StringComparison.OrdinalIgnoreCase));
 
-                File.Delete(file);
-                _progress.Report((0, $"Removed stale temp file: {Path.GetFileName(file)}"));
-            }
+                foreach (var file in staleFiles)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (File.GetLastWriteTimeUtc(file) >= cutoff)
+                        continue;
+
+                    File.Delete(file);
+                    _progress.Report((0, $"Removed stale temp file: {Path.GetFileName(file)}"));
+                }
+            }, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
             _progress.Report((0, $"WARN: Failed to clean stale temp files: {ex.Message}"));
         }
+    }
+
+    private static async Task CopyFileAsync(string sourcePath, string destinationPath, CancellationToken cancellationToken)
+    {
+        const int BufferSize = 1024 * 128;
+        await using var source = new FileStream(
+            sourcePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            BufferSize,
+            useAsync: true);
+        await using var destination = new FileStream(
+            destinationPath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None,
+            BufferSize,
+            useAsync: true);
+
+        await source.CopyToAsync(destination, BufferSize, cancellationToken);
+        await destination.FlushAsync(cancellationToken);
     }
 
     private async Task TryDropDatabaseAsync(string tempDbName, string phase)

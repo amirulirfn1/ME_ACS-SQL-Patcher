@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using MagDbPatcher.Infrastructure;
 using MagDbPatcher.Models;
 
 namespace MagDbPatcher.Services;
@@ -8,13 +9,23 @@ namespace MagDbPatcher.Services;
 public class AppSettingsService
 {
     private readonly string _settingsPath;
+    private readonly Action<string, Exception?> _logWarning;
 
-    public AppSettingsService()
+    public AppSettingsService(string? settingsPath = null, Action<string, Exception?>? logWarning = null)
     {
-        var dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MagDbPatcher");
-        _settingsPath = Path.Combine(dir, "settings.json");
+        if (string.IsNullOrWhiteSpace(settingsPath))
+        {
+            var dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MagDbPatcher");
+            _settingsPath = Path.Combine(dir, "settings.json");
+        }
+        else
+        {
+            _settingsPath = settingsPath;
+        }
+
+        _logWarning = logWarning ?? ((message, ex) => DiagnosticsLog.Warning("AppSettingsService", message, ex));
     }
 
     public async Task<AppSettings> LoadAsync()
@@ -28,8 +39,19 @@ public class AppSettingsService
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             return JsonSerializer.Deserialize<AppSettings>(json, options) ?? new AppSettings();
         }
+        catch (JsonException ex)
+        {
+            _logWarning($"Failed to parse settings at '{_settingsPath}'. Falling back to defaults.", ex);
+            return new AppSettings();
+        }
+        catch (IOException ex)
+        {
+            _logWarning($"Failed to read settings at '{_settingsPath}'. Falling back to defaults.", ex);
+            return new AppSettings();
+        }
         catch
         {
+            _logWarning($"Unexpected error while loading settings at '{_settingsPath}'. Falling back to defaults.", null);
             return new AppSettings();
         }
     }

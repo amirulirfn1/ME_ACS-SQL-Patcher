@@ -71,38 +71,6 @@ public sealed class PatchRunCoordinator
         return issues;
     }
 
-    public string BuildPreflightSummary(PatchRunRequest request)
-    {
-        var steps = _versionService.CalculateUpgradePath(request.FromVersionId, request.ToVersionId);
-        var totalScripts = steps.Sum(s => s.Scripts.Count);
-        var lines = new List<string>
-        {
-            $"From: {request.FromVersionId}",
-            $"To:   {request.ToVersionId}",
-            $"SQL:  {request.ConnectionSettings.Server}",
-            $"Temp: {request.TempFolder}",
-            $"Mode: {request.ExecutionOptions.ErrorMode}",
-            "",
-            $"Steps: {steps.Count}, Scripts: {totalScripts}",
-            "Path strategy: shortest-step BFS over strictly increasing version order",
-            ""
-        };
-
-        foreach (var step in steps)
-        {
-            lines.Add($"{step.FromVersion} -> {step.ToVersion}");
-            foreach (var script in step.Scripts)
-            {
-                lines.Add($"  - {Path.GetFileName(script)}");
-            }
-
-            lines.Add("");
-        }
-
-        lines.Add("Click OK to start patching, or Cancel to stop.");
-        return string.Join("\n", lines);
-    }
-
     public async Task<bool> TestConnectionAsync(SqlConnectionSettings settings)
     {
         var svc = _sqlFactory(settings, null, null, null);
