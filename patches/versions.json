@@ -74,9 +74,15 @@
     },
     {
       "id": "7.2.3-20260123",
-      "name": "7.2.3 (23 Jan 2026) (Latest)",
-      "upgradesTo": null,
+      "name": "7.2.3 (23 Jan 2026)",
+      "upgradesTo": "7.2.4",
       "order": 13
+    },
+    {
+      "id": "7.2.4",
+      "name": "7.2.4 (Latest)",
+      "upgradesTo": null,
+      "order": 14
     }
   ],
   "patches": [

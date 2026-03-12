@@ -1,4 +1,7 @@
+using MagDbPatcher.Models;
+using MagDbPatcher.Services;
 using MagDbPatcher.ViewModels;
+using MagDbPatcher.Workflows;
 
 namespace MagDbPatcher.Infrastructure;
 
@@ -13,6 +16,13 @@ public enum RunStepState
 public enum SourceFileHintKind
 {
     None,
+    Success,
+    Error
+}
+
+public enum SqlTestMessageTone
+{
+    Neutral,
     Success,
     Error
 }
@@ -39,10 +49,47 @@ public sealed record StepGuidanceState(
 public sealed record RunSummaryState(
     string SourceFileHint,
     SourceFileHintKind SourceFileHintKind,
-    string VersionsText,
-    string TempFolderText,
+    string SourceText,
+    string UpgradePathText,
+    string ConnectionText,
+    string PlanText,
     string OutputText,
-    string PlanText);
+    string SafeguardsText);
+
+public sealed record RunSummaryInput(
+    string SourceBakPath,
+    string FromVersionId,
+    string ToVersionId,
+    string SqlServer,
+    SqlAuthMode SqlAuthMode,
+    bool SqlConnectionTestPassed,
+    string TempFolder,
+    PatchErrorMode ErrorMode,
+    int WarningThreshold,
+    string OutputBakPath,
+    VersionService? VersionService);
+
+public sealed record SqlConnectionTestFeedback(
+    bool Passed,
+    string Message,
+    SqlTestMessageTone Tone,
+    NotificationState? Banner = null);
+
+public sealed record RunExecutionState(
+    int ProgressValue,
+    string StatusText,
+    string DetailText,
+    string ResultSummary);
+
+public sealed record RunCompletionState(
+    string StatusText,
+    string DetailText,
+    string ResultSummary,
+    NotificationState Banner,
+    bool EnableOpenOutputFolder,
+    bool EnableCopyDiagnostics,
+    int WarningCount,
+    bool ExpandDiagnostics);
 
 public sealed record NotificationState(
     NotificationLevel Level,

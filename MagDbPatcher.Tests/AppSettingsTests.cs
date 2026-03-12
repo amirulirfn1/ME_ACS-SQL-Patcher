@@ -1,4 +1,5 @@
 using System.Text.Json;
+using MagDbPatcher.Infrastructure;
 using MagDbPatcher.Models;
 using MagDbPatcher.Services;
 using Xunit;
@@ -41,5 +42,20 @@ public class AppSettingsTests
         Assert.Empty(loaded.RecentBackupFiles);
         Assert.Single(logs);
         Assert.Contains("Falling back to defaults", logs[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SaveAsync_UsesPortableSettingsPath_WhenAppPathsProvided()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "MagDbPatcher.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        var appPaths = new AppRuntimePaths(root);
+        var service = new AppSettingsService(appPaths);
+        await service.SaveAsync(new AppSettings { LastSqlServer = @".\MAGSQL" });
+
+        Assert.True(File.Exists(appPaths.SettingsFilePath));
+        var loaded = await service.LoadAsync();
+        Assert.Equal(@".\MAGSQL", loaded.LastSqlServer);
     }
 }

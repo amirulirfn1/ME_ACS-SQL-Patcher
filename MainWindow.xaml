@@ -1,7 +1,9 @@
 <Window x:Class="MagDbPatcher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:MagDbPatcher.Models"
         Title="ME_ACS SQL Patcher"
+        Icon="/Assets/me-acs-patcher.ico"
         Height="800" Width="1280"
         MinHeight="640" MinWidth="980"
         WindowState="Normal"
@@ -22,19 +24,42 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel>
-                    <TextBlock Text="ME_ACS SQL Patcher" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
-                    <TextBlock Text="Restore and upgrade a MagEtegra database backup." FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="0,6,0,0"/>
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="54"
+                            Height="54"
+                            Background="{StaticResource BrandAccentSoft}"
+                            BorderBrush="{StaticResource BrandAccentLine}"
+                            BorderThickness="1"
+                            CornerRadius="16"
+                            Padding="8"
+                            Margin="0,0,14,0">
+                        <Image Source="/Assets/me-acs-patcher.png"
+                               Stretch="Uniform"
+                               SnapsToDevicePixels="True"/>
+                    </Border>
+                    <StackPanel>
+                        <TextBlock Text="ME_ACS SQL Patcher" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" />
+                        <TextBlock Text="Portable support tool to restore and upgrade a MagEtegra database backup." FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="0,6,0,0"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <TextBlock x:Name="txtVersion"
-                           Text="{Binding PatchVersionText}"
-                           Grid.Column="1"
-                           VerticalAlignment="Top"
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           Foreground="{StaticResource TextMuted}"
-                           Margin="0,6,16,0"/>
+                <StackPanel Grid.Column="1"
+                            VerticalAlignment="Top"
+                            Margin="0,4,16,0">
+                    <TextBlock x:Name="txtBuildVersion"
+                               Text="{Binding AppBuildText}"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Right"
+                               Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock x:Name="txtVersion"
+                               Text="{Binding PatchVersionText}"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Right"
+                               Foreground="{StaticResource TextMuted}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
 
                 <Button x:Name="btnAdminTools"
                         Grid.Column="2"
@@ -256,7 +281,7 @@
 
                         <Expander x:Name="expConnectionSettings" Grid.Row="4" IsExpanded="False" Margin="0,12,0,0">
                             <Expander.Header>
-                                <TextBlock Text="Advanced Settings" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}"/>
+                                <TextBlock Text="Advanced Settings / Admin" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}"/>
                             </Expander.Header>
                             <ScrollViewer Margin="0,10,0,0" VerticalScrollBarVisibility="Auto" MaxHeight="300">
                                 <StackPanel>
@@ -267,16 +292,53 @@
                                     </StackPanel>
                                     <StackPanel x:Name="pnlSqlLogin" Margin="0,0,0,8" Visibility="Collapsed">
                                         <TextBlock Text="Username" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
-                                        <TextBox x:Name="txtSqlUsername" TabIndex="23" FontSize="13"/>
+                                        <TextBox x:Name="txtSqlUsername" TabIndex="23" FontSize="13" TextChanged="AdvancedRunSettingTextChanged"/>
                                         <TextBlock Text="Password" Style="{StaticResource FieldLabelText}" Margin="0,10,0,6"/>
-                                        <PasswordBox x:Name="pwdSqlPassword" TabIndex="24" FontSize="13"/>
+                                        <PasswordBox x:Name="pwdSqlPassword" TabIndex="24" FontSize="13" PasswordChanged="AdvancedRunSettingPasswordChanged"/>
                                     </StackPanel>
+
+                                    <TextBlock Text="Run Behavior" Style="{StaticResource FieldLabelText}" Margin="0,4,0,6"/>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="120"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,8">
+                                            <TextBlock Text="Temp folder" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
+                                            <TextBox x:Name="txtTempFolder" FontSize="12" TextChanged="AdvancedRunSettingTextChanged"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+                                            <Button x:Name="btnBrowseTempFolder" Content="Browse" Style="{StaticResource BtnSecondary}" Margin="0,22,0,8" Click="BtnBrowseTempFolder_Click"/>
+                                            <Button x:Name="btnResetTempFolder" Content="Default" Style="{StaticResource BtnSecondary}" Click="BtnResetTempFolder_Click"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,0">
+                                            <TextBlock Text="SQL error handling" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
+                                            <ComboBox x:Name="cmbErrorMode" FontSize="12" SelectedValuePath="Tag" SelectionChanged="AdvancedRunSettingSelectionChanged">
+                                                <ComboBoxItem Tag="{x:Static models:PatchErrorMode.WarnAndContinue}" Content="Warn and continue"/>
+                                                <ComboBoxItem Tag="{x:Static models:PatchErrorMode.FailFast}" Content="Fail fast"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="1" Grid.Column="1">
+                                            <TextBlock Text="Warning threshold" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
+                                            <TextBox x:Name="txtWarningThreshold" FontSize="12" TextChanged="AdvancedRunSettingTextChanged"/>
+                                        </StackPanel>
+                                    </Grid>
+
                                     <TextBlock Text="Patches Folder" Style="{StaticResource FieldLabelText}" Margin="0,0,0,6"/>
                                     <TextBox x:Name="txtPatchesFolder" IsReadOnly="True" FontSize="12" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Default is the portable app folder beside the EXE. Normal updates should replace the whole app folder; patch-pack import is only for manual admin updates." FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                                     <WrapPanel Orientation="Horizontal">
                                         <Button x:Name="btnChangePatchesFolder" Content="Change" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" MinWidth="74" Click="BtnChangePatchesFolder_Click"/>
                                         <Button x:Name="btnOpenPatchesFolder" Content="Open" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" MinWidth="64" Click="BtnOpenPatchesFolder_Click"/>
-                                        <Button x:Name="btnResetPatchesFolder" Content="Reset" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" MinWidth="64" Click="BtnResetPatchesFolder_Click"/>
+                                        <Button x:Name="btnResetPatchesFolder" Content="Reset to App Folder" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" MinWidth="138" Click="BtnResetPatchesFolder_Click"/>
                                         <Button x:Name="btnImportPatchPack" Content="Import Patch Pack (.zip)" AutomationProperties.Name="Import patch pack zip" Style="{StaticResource BtnSecondary}" Margin="0,0,8,8" Click="BtnImportPatchPack_Click"/>
                                     </WrapPanel>
                                     <TextBlock x:Name="txtLastImportedPack" Text="" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap"/>
@@ -288,7 +350,7 @@
             </Grid>
             </ScrollViewer>
 
-            <Grid Grid.Column="1" Margin="10,0,0,0">
+            <Grid Grid.Column="1" Margin="10,0,0,0" MinHeight="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
@@ -296,138 +358,158 @@
                 <Border Grid.Row="0" Style="{StaticResource Card}">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Step 4: Run Patch" Style="{StaticResource SectionHeaderText}"/>
-                                <Border x:Name="bdStep4Status" Grid.Column="1" Style="{StaticResource StepStatusChip}" Margin="8,0,0,0">
-                                    <TextBlock x:Name="txtStep4Status" Text="Pending" Style="{StaticResource StepStatusChipText}"/>
-                                </Border>
-                            </Grid>
-                            <TextBlock Text="Review the plan and start the patch when all steps are ready." Style="{StaticResource FieldLabelText}" Margin="0,6,0,10"/>
-                        </StackPanel>
-
-                        <Border x:Name="bdStatusBanner" Grid.Row="1" Style="{StaticResource StatusBannerInfo}" Margin="0,0,0,10" Visibility="Collapsed">
+                        <ScrollViewer Grid.Row="0"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      CanContentScroll="True"
+                                      Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock x:Name="txtNotification" Text="{Binding NotificationMessage}" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                                <ListBox x:Name="lstValidationIssues"
-                                         AutomationProperties.Name="Validation issues"
-                                         MaxHeight="88"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         Foreground="{StaticResource Error}"
-                                         FontSize="12"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Row="2" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
-                            <StackPanel>
-                                <ProgressBar x:Name="progressBar"
-                                             Style="{StaticResource ModernProgressBar}"
-                                             Minimum="0"
-                                             Maximum="100"
-                                             Value="{Binding ProgressValue}"
-                                             Margin="0,0,0,8"/>
-
-                                <TextBlock x:Name="txtStatus" Text="{Binding StatusText}" Margin="0,0,0,6" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
-                                <TextBlock x:Name="txtResultSummary" Text="{Binding ResultSummary}" Margin="0,0,0,0" FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Grid Grid.Row="3" Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,0,5,5">
-                                <StackPanel>
-                                    <TextBlock Text="Versions + SQL" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
-                                    <TextBlock x:Name="txtRunSummaryVersions" Text="{Binding RunSummaryVersions}" Foreground="{StaticResource TextPrimary}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <StackPanel Margin="0,0,0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Step 4: Run Patch" Style="{StaticResource SectionHeaderText}"/>
+                                        <Border x:Name="bdStep4Status" Grid.Column="1" Style="{StaticResource StepStatusChip}" Margin="8,0,0,0">
+                                            <TextBlock x:Name="txtStep4Status" Text="Pending" Style="{StaticResource StepStatusChipText}"/>
+                                        </Border>
+                                    </Grid>
+                                    <TextBlock Text="Review the plan and start the patch when all steps are ready." Style="{StaticResource FieldLabelText}" Margin="0,6,0,0"/>
                                 </StackPanel>
-                            </Border>
 
-                            <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="5,0,0,5">
-                                <StackPanel>
-                                    <TextBlock Text="Plan" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
-                                    <TextBlock x:Name="txtRunSummaryPlan" Text="{Binding RunSummaryPlan}" Foreground="{StaticResource TextPrimary}" FontSize="12" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Row="1" Grid.Column="0" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,5,5,0">
-                                <StackPanel>
-                                    <TextBlock Text="Temp Folder" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
-                                    <TextBlock x:Name="txtRunSummaryTemp" Text="{Binding RunSummaryTemp}" Foreground="{StaticResource TextSecondary}" FontSize="12" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="5,5,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Output" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
-                                    <TextBlock x:Name="txtRunSummaryOutputAndWarnings" Text="{Binding RunSummaryOutput}" Foreground="{StaticResource TextPrimary}" FontSize="12" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <Expander x:Name="expRunWarnings" Grid.Row="4" IsExpanded="False" Margin="0,0,0,10">
-                            <Expander.Header>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Diagnostics" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
-                                    <Border x:Name="bdWarningChip" Background="{StaticResource InfoSoft}" BorderBrush="{StaticResource BorderStrong}" BorderThickness="1" CornerRadius="10" Padding="8,2" Margin="8,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock x:Name="txtWarningChip" Text="0" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}"/>
-                                    </Border>
-                                </StackPanel>
-                            </Expander.Header>
-
-                            <Border Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,8,0,0">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-
-                                    <ListBox x:Name="lstRunWarnings"
-                                             MaxHeight="96"
-                                             Background="Transparent"
-                                             BorderThickness="0"
-                                             Foreground="{StaticResource TextPrimary}"
-                                             FontSize="12"
-                                             Margin="0,0,0,8"/>
-
-                                    <Border Grid.Row="1" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8">
-                                        <TextBox x:Name="txtLog"
-                                                 AutomationProperties.Name="Runtime log"
-                                                 Text="{Binding LogText}"
-                                                 FontFamily="Consolas"
-                                                 FontSize="12"
-                                                 Foreground="{StaticResource TextMuted}"
+                                <Border x:Name="bdStatusBanner" Style="{StaticResource StatusBannerInfo}" Margin="0,0,0,10" Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock x:Name="txtNotification" Text="{Binding NotificationMessage}" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                                        <ListBox x:Name="lstValidationIssues"
+                                                 AutomationProperties.Name="Validation issues"
+                                                 MaxHeight="88"
                                                  Background="Transparent"
                                                  BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 TextWrapping="Wrap"
-                                                 AcceptsReturn="True"
-                                                 VerticalScrollBarVisibility="Auto"/>
+                                                 Foreground="{StaticResource Error}"
+                                                 FontSize="12"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <ProgressBar x:Name="progressBar"
+                                                     Style="{StaticResource ModernProgressBar}"
+                                                     Minimum="0"
+                                                     Maximum="100"
+                                                     Value="{Binding ProgressValue}"
+                                                     Margin="0,0,0,8"/>
+
+                                        <TextBlock x:Name="txtStatus" Text="{Binding StatusText}" Margin="0,0,0,6" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                                        <TextBlock x:Name="txtRunProgressDetail" Text="{Binding RunProgressDetailText}" Margin="0,0,0,6" FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="txtResultSummary" Text="{Binding ResultSummary}" Margin="0,0,0,0" FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,0,5,5">
+                                        <StackPanel>
+                                            <TextBlock Text="Source Backup" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
+                                            <TextBlock x:Name="txtRunSummarySource" Text="{Binding RunSummarySource}" Foreground="{StaticResource TextPrimary}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="5,0,0,5">
+                                        <StackPanel>
+                                            <TextBlock Text="Upgrade Path" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
+                                            <TextBlock x:Name="txtRunSummaryUpgradePath" Text="{Binding RunSummaryUpgradePath}" Foreground="{StaticResource TextPrimary}" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Row="1" Grid.Column="0" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,5,5,0">
+                                        <StackPanel>
+                                            <TextBlock Text="SQL Target" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
+                                            <TextBlock x:Name="txtRunSummaryConnection" Text="{Binding RunSummaryConnection}" Foreground="{StaticResource TextSecondary}" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="5,5,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Plan" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
+                                            <TextBlock x:Name="txtRunSummaryPlan" Text="{Binding RunSummaryPlan}" Foreground="{StaticResource TextPrimary}" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Row="2" Grid.Column="0" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,5,5,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Output" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
+                                            <TextBlock x:Name="txtRunSummaryOutput" Text="{Binding RunSummaryOutput}" Foreground="{StaticResource TextPrimary}" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Row="2" Grid.Column="1" Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="5,5,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Safeguards" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,3"/>
+                                            <TextBlock x:Name="txtRunSummarySafeguards" Text="{Binding RunSummarySafeguards}" Foreground="{StaticResource TextPrimary}" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
                                     </Border>
                                 </Grid>
-                            </Border>
-                        </Expander>
 
-                        <Grid Grid.Row="5">
+                                <Expander x:Name="expRunWarnings" IsExpanded="False">
+                                    <Expander.Header>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Diagnostics" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                            <Border x:Name="bdWarningChip" Background="{StaticResource InfoSoft}" BorderBrush="{StaticResource BorderStrong}" BorderThickness="1" CornerRadius="10" Padding="8,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock x:Name="txtWarningChip" Text="0" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Expander.Header>
+
+                                    <Border Background="{StaticResource BgTertiary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,8,0,0">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+
+                                            <ListBox x:Name="lstRunWarnings"
+                                                     MaxHeight="96"
+                                                     Background="Transparent"
+                                                     BorderThickness="0"
+                                                     Foreground="{StaticResource TextPrimary}"
+                                                     FontSize="12"
+                                                     Margin="0,0,0,8"/>
+
+                                            <Border Grid.Row="1" Background="{StaticResource BgSecondary}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="8">
+                                                <TextBox x:Name="txtLog"
+                                                         AutomationProperties.Name="Runtime log"
+                                                         Text="{Binding LogText}"
+                                                         FontFamily="Consolas"
+                                                         FontSize="12"
+                                                         Foreground="{StaticResource TextMuted}"
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         IsReadOnly="True"
+                                                         TextWrapping="Wrap"
+                                                         AcceptsReturn="True"
+                                                         VerticalScrollBarVisibility="Auto"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </Expander>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Grid Grid.Row="1">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>

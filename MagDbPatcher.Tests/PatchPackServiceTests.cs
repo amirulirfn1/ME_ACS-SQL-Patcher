@@ -81,6 +81,7 @@ public class PatchPackServiceTests
         try
         {
             var target = Path.Combine(root, "targetPatches");
+            var backups = Path.Combine(root, "backups");
             Directory.CreateDirectory(target);
             await File.WriteAllTextAsync(Path.Combine(target, "sentinel_old.txt"), "old");
             await File.WriteAllTextAsync(Path.Combine(target, "versions.json"), """{ "versions": [], "patches": [] }""");
@@ -104,13 +105,14 @@ public class PatchPackServiceTests
                 await WriteTextEntryAsync(zip, "patches/sentinel_new.txt", "new");
             }
 
-            var svc = new PatchPackService();
+            var svc = new PatchPackService(backups);
             var result = await svc.ImportAsync(zipPath, target);
 
             Assert.True(File.Exists(Path.Combine(target, "sentinel_new.txt")));
             Assert.False(File.Exists(Path.Combine(target, "sentinel_old.txt")));
 
             Assert.True(Directory.Exists(result.BackupFolder));
+            Assert.StartsWith(Path.GetFullPath(backups), Path.GetFullPath(result.BackupFolder), StringComparison.OrdinalIgnoreCase);
             Assert.True(File.Exists(Path.Combine(result.BackupFolder, "sentinel_old.txt")));
         }
         finally
@@ -146,4 +148,3 @@ public class PatchPackServiceTests
         }
     }
 }
-

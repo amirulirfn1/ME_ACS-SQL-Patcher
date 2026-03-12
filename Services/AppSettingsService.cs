@@ -11,14 +11,16 @@ public class AppSettingsService
     private readonly string _settingsPath;
     private readonly Action<string, Exception?> _logWarning;
 
-    public AppSettingsService(string? settingsPath = null, Action<string, Exception?>? logWarning = null)
+    public AppSettingsService(string? settingsPath, Action<string, Exception?>? logWarning = null)
+        : this(appPaths: null, settingsPath, logWarning)
+    {
+    }
+
+    public AppSettingsService(AppRuntimePaths? appPaths = null, string? settingsPath = null, Action<string, Exception?>? logWarning = null)
     {
         if (string.IsNullOrWhiteSpace(settingsPath))
         {
-            var dir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "MagDbPatcher");
-            _settingsPath = Path.Combine(dir, "settings.json");
+            _settingsPath = (appPaths ?? AppRuntimePaths.CreateDefault()).SettingsFilePath;
         }
         else
         {

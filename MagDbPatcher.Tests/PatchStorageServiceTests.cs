@@ -1,4 +1,5 @@
 using MagDbPatcher.Models;
+using MagDbPatcher.Infrastructure;
 using MagDbPatcher.Services;
 using Xunit;
 
@@ -45,5 +46,23 @@ public class PatchStorageServiceTests
 
         Assert.Equal(Path.GetFullPath(configured), resolved);
         Assert.True(File.Exists(Path.Combine(configured, "keep.txt")));
+    }
+
+    [Fact]
+    public async Task ResolvePatchesFolderAsync_UsesPortableAppFolderByDefault()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "MagDbPatcher.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        var appPaths = new AppRuntimePaths(root);
+        Directory.CreateDirectory(appPaths.PatchesFolder);
+        await File.WriteAllTextAsync(Path.Combine(appPaths.PatchesFolder, "versions.json"), """{ "versions": [], "patches": [] }""");
+
+        var settings = new AppSettings();
+        var service = new PatchStorageService(appPaths);
+        var resolved = await service.ResolvePatchesFolderAsync(settings, appPaths.PatchesFolder);
+
+        Assert.Equal(appPaths.PatchesFolder, resolved);
+        Assert.Equal(appPaths.PatchesFolder, settings.PatchesFolder);
     }
 }

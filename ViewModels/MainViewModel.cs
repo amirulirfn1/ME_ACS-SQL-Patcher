@@ -20,12 +20,16 @@ public sealed class MainViewModel : BindableBase
     private string _resultSummary = "";
     private bool _canRetry;
     private string _patchVersionText = "";
+    private string _appBuildText = AppMetadata.BuildLabel;
     private string _nextActionText = "Next: Select a source backup file.";
     private string _patchActionHint = "Complete Step 1 to continue.";
-    private string _runSummaryVersions = "Versions: Select source and target versions";
-    private string _runSummaryPlan = "Plan: Select versions to preview steps and script count.";
-    private string _runSummaryTemp = @"Temp folder: C:\temp\MagDbPatcher";
-    private string _runSummaryOutput = "Output: Not generated yet";
+    private string _runSummarySource = "Select a source backup file to preview the run.";
+    private string _runSummaryUpgradePath = "Select source and target versions to preview the upgrade path.";
+    private string _runSummaryConnection = "Server: .\\MAGSQL";
+    private string _runSummaryPlan = "Choose versions to calculate steps and script count.";
+    private string _runSummaryOutput = "Select a source backup to resolve the output path.";
+    private string _runSummarySafeguards = $"Temp: {AppRuntimePaths.CreateDefault().TempFolder}";
+    private string _runProgressDetailText = "Phase: Idle";
     private string _sourceFileHintText = "";
     private SourceFileHintKind _sourceFileHintKind;
     private string _sqlTestResultText = "";
@@ -122,6 +126,12 @@ public sealed class MainViewModel : BindableBase
         set => SetProperty(ref _patchVersionText, value);
     }
 
+    public string AppBuildText
+    {
+        get => _appBuildText;
+        set => SetProperty(ref _appBuildText, value);
+    }
+
     public string NextActionText
     {
         get => _nextActionText;
@@ -134,10 +144,22 @@ public sealed class MainViewModel : BindableBase
         set => SetProperty(ref _patchActionHint, value);
     }
 
-    public string RunSummaryVersions
+    public string RunSummarySource
     {
-        get => _runSummaryVersions;
-        set => SetProperty(ref _runSummaryVersions, value);
+        get => _runSummarySource;
+        set => SetProperty(ref _runSummarySource, value);
+    }
+
+    public string RunSummaryUpgradePath
+    {
+        get => _runSummaryUpgradePath;
+        set => SetProperty(ref _runSummaryUpgradePath, value);
+    }
+
+    public string RunSummaryConnection
+    {
+        get => _runSummaryConnection;
+        set => SetProperty(ref _runSummaryConnection, value);
     }
 
     public string RunSummaryPlan
@@ -146,16 +168,22 @@ public sealed class MainViewModel : BindableBase
         set => SetProperty(ref _runSummaryPlan, value);
     }
 
-    public string RunSummaryTemp
-    {
-        get => _runSummaryTemp;
-        set => SetProperty(ref _runSummaryTemp, value);
-    }
-
     public string RunSummaryOutput
     {
         get => _runSummaryOutput;
         set => SetProperty(ref _runSummaryOutput, value);
+    }
+
+    public string RunSummarySafeguards
+    {
+        get => _runSummarySafeguards;
+        set => SetProperty(ref _runSummarySafeguards, value);
+    }
+
+    public string RunProgressDetailText
+    {
+        get => _runProgressDetailText;
+        set => SetProperty(ref _runProgressDetailText, value);
     }
 
     public string SourceFileHintText

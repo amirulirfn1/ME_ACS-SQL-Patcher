@@ -102,7 +102,8 @@ public sealed class PatchRunCoordinator
                     Message = $"{message} (Script {currentScript}/{totalScripts})",
                     FlowState = PatchFlowState.Run,
                     CurrentScript = currentScript,
-                    TotalScripts = totalScripts
+                    TotalScripts = totalScripts,
+                    WarningCount = warnings.Count
                 });
             }
             else
@@ -114,14 +115,15 @@ public sealed class PatchRunCoordinator
                     Message = message,
                     FlowState = PatchFlowState.Run,
                     CurrentScript = currentScript,
-                    TotalScripts = totalScripts
+                    TotalScripts = totalScripts,
+                    WarningCount = warnings.Count
                 });
             }
 
             logProgress?.Report(message);
         });
 
-        var warningProgress = new Progress<SqlBatchWarning>(warning =>
+        var warningProgress = new CallbackProgress<SqlBatchWarning>(warning =>
         {
             warnings.Add(warning);
             progress?.Report(new PatchRunProgress
@@ -130,7 +132,8 @@ public sealed class PatchRunCoordinator
                 Message = $"Warning in {warning.ScriptName}: SQL {warning.ErrorNumber}",
                 FlowState = PatchFlowState.Run,
                 CurrentScript = currentScript,
-                TotalScripts = totalScripts
+                TotalScripts = totalScripts,
+                WarningCount = warnings.Count
             });
         });
 
@@ -145,7 +148,8 @@ public sealed class PatchRunCoordinator
                 Message = p.message,
                 FlowState = PatchFlowState.Run,
                 CurrentScript = currentScript,
-                TotalScripts = totalScripts
+                TotalScripts = totalScripts,
+                WarningCount = warnings.Count
             });
             logProgress?.Report(p.message);
         });
@@ -258,5 +262,10 @@ public sealed class PatchRunCoordinator
         segments.AddRange(steps.Select(step => step.ToVersion));
         var totalScripts = steps.Sum(step => step.Scripts.Count);
         return $"{string.Join(" -> ", segments)} ({steps.Count} step(s), {totalScripts} script(s))";
+    }
+
+    private sealed class CallbackProgress<T>(Action<T> callback) : IProgress<T>
+    {
+        public void Report(T value) => callback(value);
     }
 }

@@ -11,6 +11,15 @@ namespace MagDbPatcher.Services;
 
 public class PatchPackService
 {
+    private readonly string? _backupRootDirectory;
+
+    public PatchPackService(string? backupRootDirectory = null)
+    {
+        _backupRootDirectory = string.IsNullOrWhiteSpace(backupRootDirectory)
+            ? null
+            : Path.GetFullPath(backupRootDirectory);
+    }
+
     public record ImportResult(PatchPackManifest Manifest, string BackupFolder);
 
     public async Task<ImportResult> ImportAsync(string zipPath, string targetPatchesFolder)
@@ -43,7 +52,7 @@ public class PatchPackService
             var extractedPatchesFolder = Path.Combine(tempRoot, manifest.ContentRoot);
             await ValidateExtractedPatchesAsync(extractedPatchesFolder);
 
-            var backup = AtomicSwap(targetPatchesFolder, extractedPatchesFolder);
+            var backup = AtomicSwap(targetPatchesFolder, extractedPatchesFolder, _backupRootDirectory);
             return new ImportResult(manifest, backup);
         }
         finally
@@ -145,7 +154,7 @@ public class PatchPackService
         }
     }
 
-    private static string AtomicSwap(string targetPatchesFolder, string extractedPatchesFolder)
+    private static string AtomicSwap(string targetPatchesFolder, string extractedPatchesFolder, string? backupRootDirectory)
     {
         var targetFull = Path.GetFullPath(targetPatchesFolder);
         var parent = Path.GetDirectoryName(targetFull);
@@ -154,7 +163,13 @@ public class PatchPackService
 
         Directory.CreateDirectory(parent);
 
-        var backup = $"{targetFull}_backup_{DateTime.Now:yyyyMMdd_HHmmss}";
+        var backupBase = string.IsNullOrWhiteSpace(backupRootDirectory)
+            ? parent
+            : backupRootDirectory;
+        Directory.CreateDirectory(backupBase);
+
+        var backupName = $"{Path.GetFileName(targetFull)}_{DateTime.Now:yyyyMMdd_HHmmss}";
+        var backup = Path.Combine(backupBase, backupName);
 
         if (Directory.Exists(targetFull))
         {

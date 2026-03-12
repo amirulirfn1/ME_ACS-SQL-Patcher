@@ -4,6 +4,13 @@ namespace MagDbPatcher.Infrastructure;
 
 public sealed class SettingsBinder
 {
+    private readonly AppRuntimePaths _appPaths;
+
+    public SettingsBinder(AppRuntimePaths? appPaths = null)
+    {
+        _appPaths = appPaths ?? AppRuntimePaths.CreateDefault();
+    }
+
     public SettingsViewSnapshot BuildViewSnapshot(AppSettings settings)
     {
         return new SettingsViewSnapshot
@@ -16,7 +23,10 @@ public sealed class SettingsBinder
                 .ToList(),
             LastSqlServer = settings.LastSqlServer ?? string.Empty,
             SqlUsername = settings.SqlUsername ?? string.Empty,
-            SqlAuthMode = settings.SqlAuthMode
+            SqlAuthMode = settings.SqlAuthMode,
+            PatchTempFolder = _appPaths.ResolveTempFolder(settings.PatchTempFolder),
+            WarningThreshold = settings.WarningThreshold <= 0 ? 10 : settings.WarningThreshold,
+            PatchErrorMode = settings.PatchErrorMode
         };
     }
 
@@ -24,7 +34,7 @@ public sealed class SettingsBinder
     {
         return new AppSettings
         {
-            PatchTempFolder = input.Existing.PatchTempFolder,
+            PatchTempFolder = _appPaths.ResolveTempFolder(input.Existing.PatchTempFolder),
             WarningThreshold = input.Existing.WarningThreshold <= 0 ? 10 : input.Existing.WarningThreshold,
             PatchErrorMode = input.Existing.PatchErrorMode,
             PatchesFolder = input.PatchesFolder,
@@ -45,6 +55,9 @@ public sealed class SettingsViewSnapshot
     public string LastSqlServer { get; init; } = string.Empty;
     public string SqlUsername { get; init; } = string.Empty;
     public SqlAuthMode SqlAuthMode { get; init; } = SqlAuthMode.Windows;
+    public string PatchTempFolder { get; init; } = AppRuntimePaths.CreateDefault().TempFolder;
+    public int WarningThreshold { get; init; } = 10;
+    public PatchErrorMode PatchErrorMode { get; init; } = PatchErrorMode.WarnAndContinue;
 }
 
 public sealed class SettingsPersistInput

@@ -7,6 +7,13 @@ namespace MagDbPatcher.Infrastructure;
 
 public sealed class RunRequestBuilder
 {
+    private readonly AppRuntimePaths _appPaths;
+
+    public RunRequestBuilder(AppRuntimePaths? appPaths = null)
+    {
+        _appPaths = appPaths ?? AppRuntimePaths.CreateDefault();
+    }
+
     public PatchRunRequest Build(
         string sourceBakPath,
         string fromVersionId,
@@ -17,9 +24,7 @@ public sealed class RunRequestBuilder
         var source = (sourceBakPath ?? string.Empty).Trim();
         var from = (fromVersionId ?? string.Empty).Trim();
         var to = (toVersionId ?? string.Empty).Trim();
-        var tempFolder = string.IsNullOrWhiteSpace(settings.PatchTempFolder)
-            ? @"C:\temp\MagDbPatcher"
-            : settings.PatchTempFolder!;
+        var tempFolder = _appPaths.ResolveTempFolder(settings.PatchTempFolder);
 
         return new PatchRunRequest
         {

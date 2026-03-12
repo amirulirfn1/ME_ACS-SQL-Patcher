@@ -59,6 +59,9 @@ public class SqlServerService
 
     protected void EmitWarning(SqlBatchWarning warning) => _warnings?.Report(warning);
 
+    public virtual void EnsureTempFolderAccess(string tempFolder)
+        => SqlServerFileAccessProvisioner.EnsureSqlServiceAccess(_settings.Server, tempFolder);
+
     public virtual async Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -80,13 +83,24 @@ public class SqlServerService
         using var connection = new SqlConnection(_masterConnectionString);
         await connection.OpenAsync(cancellationToken);
 
-        var fileList = await GetBackupFileListAsync(connection, bakFilePath, cancellationToken);
+        List<BackupFileEntry> fileList;
+        try
+        {
+            fileList = await GetBackupFileListAsync(connection, bakFilePath, cancellationToken);
+        }
+        catch (SqlException ex) when (IsBackupAccessFailure(ex))
+        {
+            throw new InvalidOperationException(BuildBackupAccessFailureMessage(bakFilePath, ex.Message), ex);
+        }
+
         var dataLogical = fileList.Where(f => f.Type == "D").OrderBy(f => f.FileId).ToList();
         var logLogical = fileList.Where(f => f.Type == "L").OrderBy(f => f.FileId).ToList();
 
         if (dataLogical.Count == 0 || logLogical.Count == 0)
         {
-            throw new InvalidOperationException("Backup file does not contain required data/log entries (RESTORE FILELISTONLY).");
+            throw new InvalidOperationException(BuildBackupAccessFailureMessage(
+                bakFilePath,
+                "SQL Server could not read the backup file layout (RESTORE FILELISTONLY returned no data/log entries)."));
         }
 
         var dataPath = await GetDefaultDataPathAsync(connection, cancellationToken);
@@ -330,6 +344,19 @@ EXEC(@sql);";
 
         return entries;
     }
+
+    private static bool IsBackupAccessFailure(SqlException ex)
+        => ex.Number == 3201 ||
+           ex.Number == 3013 ||
+           ex.Message.Contains("Access is denied", StringComparison.OrdinalIgnoreCase) ||
+           ex.Message.Contains("Cannot open backup device", StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildBackupAccessFailureMessage(string bakFilePath, string detail)
+        => $"SQL Server could not read the backup file needed for restore: {bakFilePath}{Environment.NewLine}" +
+           "This is not a patch-script warning, so the run cannot continue yet." + Environment.NewLine +
+           "Most common cause: the SQL Server service account does not have access to the patcher temp folder or the backup file location." + Environment.NewLine +
+           "Try using a temp folder SQL Server can access, or rerun after the app grants SQL access to the temp workspace." + Environment.NewLine +
+           $"SQL detail: {detail}";
 
     private readonly record struct BackupFileEntry(int FileId, string LogicalName, string Type);
 

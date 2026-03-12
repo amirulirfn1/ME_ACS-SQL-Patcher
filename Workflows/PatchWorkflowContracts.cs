@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MagDbPatcher.Infrastructure;
 using MagDbPatcher.Models;
 using MagDbPatcher.ViewModels;
 
@@ -11,7 +12,7 @@ public sealed class PatchRunRequest
     public string OutputBakPath { get; init; } = "";
     public string FromVersionId { get; init; } = "";
     public string ToVersionId { get; init; } = "";
-    public string TempFolder { get; init; } = @"C:\temp\MagDbPatcher";
+    public string TempFolder { get; init; } = AppRuntimePaths.CreateDefault().TempFolder;
     public PatchExecutionOptions ExecutionOptions { get; init; } = new();
     public SqlConnectionSettings ConnectionSettings { get; init; } = new();
 }
@@ -23,6 +24,7 @@ public sealed class PatchRunProgress
     public PatchFlowState FlowState { get; init; }
     public int CurrentScript { get; init; }
     public int TotalScripts { get; init; }
+    public int WarningCount { get; init; }
 }
 
 public sealed class PatchRunResult

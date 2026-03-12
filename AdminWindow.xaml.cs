@@ -24,6 +24,7 @@ public partial class AdminWindow : Window
 
     private readonly IAdminCatalogOrchestrator _catalogOrchestrator;
     private readonly AdminUiStateController _uiStateController = new();
+    private readonly AdminVersionChainFormatter _versionChainFormatter = new();
     private readonly IUserDialogService _dialogs = new UserDialogService();
 
     private readonly ObservableCollection<VersionDisplayItem> _versions = new();
@@ -144,21 +145,7 @@ public partial class AdminWindow : Window
 
     private void RebuildChainVisualization()
     {
-        var versions = _versionService.GetAllVersions();
-        if (versions.Count == 0)
-        {
-            txtVersionChain.Text = "(no versions)";
-            return;
-        }
-
-        var parts = new System.Text.StringBuilder();
-        foreach (var v in versions)
-        {
-            if (parts.Length > 0)
-                parts.Append("  →  ");
-            parts.Append(v.Id);
-        }
-        txtVersionChain.Text = parts.ToString();
+        txtVersionChain.Text = _versionChainFormatter.Format(_versionService.GetAllVersions());
     }
 
     private string? GetSelectedPatchKey()

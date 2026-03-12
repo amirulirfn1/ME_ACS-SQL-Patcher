@@ -42,6 +42,9 @@ public class PatchService
 
             await CleanupStaleTempFilesAsync(tempFolder, cancellationToken);
 
+            _progress.Report((4, "Preparing SQL access to temp workspace..."));
+            _sqlService.EnsureTempFolderAccess(tempFolder);
+
             _progress.Report((5, "Copying backup to temp location..."));
             tempBakPath = Path.Combine(tempFolder, $"source_{Guid.NewGuid():N}.bak");
             await CopyFileAsync(sourceBakPath, tempBakPath, cancellationToken);

@@ -44,4 +44,29 @@ public class InfrastructureRefactorTests
         Assert.Equal(@".\MAGSQL", result.LastSqlServer);
         Assert.Null(result.SqlUsername);
     }
+
+    [Fact]
+    public void SettingsBinder_BuildViewSnapshot_UsesMachineSafeTempFolderByDefault()
+    {
+        var paths = new AppRuntimePaths(@"C:\PortablePatcher");
+        var binder = new SettingsBinder(paths);
+
+        var result = binder.BuildViewSnapshot(new AppSettings());
+
+        Assert.Equal(paths.TempFolder, result.PatchTempFolder);
+    }
+
+    [Fact]
+    public void SettingsBinder_BuildViewSnapshot_MigratesLegacyPortableTempFolder()
+    {
+        var paths = new AppRuntimePaths(@"C:\PortablePatcher");
+        var binder = new SettingsBinder(paths);
+
+        var result = binder.BuildViewSnapshot(new AppSettings
+        {
+            PatchTempFolder = Path.Combine(paths.RootDirectory, "temp")
+        });
+
+        Assert.Equal(paths.TempFolder, result.PatchTempFolder);
+    }
 }

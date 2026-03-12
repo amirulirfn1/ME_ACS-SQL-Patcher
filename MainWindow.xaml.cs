@@ -19,13 +19,19 @@ namespace MagDbPatcher;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel = new();
-    private readonly AppSettingsService _settingsService = new();
-    private readonly PatchStorageService _patchStorageService = new();
+    private readonly AppRuntimePaths _appPaths;
+    private readonly AppSettingsService _settingsService;
+    private readonly PatchStorageService _patchStorageService;
     private readonly IUserDialogService _dialogs = new UserDialogService();
-    private readonly RunRequestBuilder _requestBuilder = new();
-    private readonly SettingsBinder _settingsBinder = new();
+    private readonly RunRequestBuilder _requestBuilder;
+    private readonly SettingsBinder _settingsBinder;
+    private readonly RunSummaryComposer _runSummaryComposer = new();
     private readonly RunUiStateController _runUiStateController = new();
     private readonly RunStateEvaluator _runStateEvaluator = new();
+    private readonly SqlConnectionTestCoordinator _sqlConnectionTestCoordinator = new();
+    private readonly RunExecutionPresenter _runExecutionPresenter = new();
+    private readonly RunDiagnosticsCoordinator _runDiagnosticsCoordinator = new();
+    private readonly SessionLog _sessionLog;
     private readonly IMainRunOrchestrator _runOrchestrator;
     private readonly ObservableCollection<string> _runWarnings = new();
     private readonly Queue<string> _pendingLogLines = new();
@@ -42,18 +48,28 @@ public partial class MainWindow : Window
     private AdminWindow? _adminWindow;
     private string _defaultPatchesFolder = "";
     private string _lastOutputPath = "";
-    private string _lastSqlTestSignature = "";
-    private bool _sqlConnectionTestPassed;
     private bool _isLoadingUi;
     private bool _isUiInitialized;
 
     public MainWindow()
-        : this(new MainRunOrchestrator())
+        : this(new MainRunOrchestrator(), AppRuntimePaths.CreateDefault())
     {
     }
 
-    internal MainWindow(IMainRunOrchestrator runOrchestrator)
+    internal MainWindow(AppRuntimePaths appPaths)
+        : this(new MainRunOrchestrator(), appPaths)
     {
+    }
+
+    internal MainWindow(IMainRunOrchestrator runOrchestrator, AppRuntimePaths? appPaths = null)
+    {
+        _appPaths = appPaths ?? AppRuntimePaths.CreateDefault();
+        _settingsService = new AppSettingsService(_appPaths);
+        _patchStorageService = new PatchStorageService(_appPaths);
+        _requestBuilder = new RunRequestBuilder(_appPaths);
+        _settingsBinder = new SettingsBinder(_appPaths);
+        _sessionLog = new SessionLog(_appPaths);
+
         InitializeComponent();
         _runOrchestrator = runOrchestrator;
 
@@ -68,6 +84,8 @@ public partial class MainWindow : Window
         lstValidationIssues.DisplayMemberPath = nameof(ValidationIssue.Message);
         cmbSourcePath.LostFocus += (_, _) => RefreshRunSummary();
         cmbSqlServer.LostFocus += (_, _) => RefreshRunSummary();
+        cmbSourcePath.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler(EditableComboTextChanged));
+        cmbSqlServer.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler(EditableComboTextChanged));
         _logFlushTimer.Tick += (_, _) => FlushPendingLogLines();
 
         Loaded += MainWindow_Loaded;
@@ -82,19 +100,24 @@ public partial class MainWindow : Window
         _isLoadingUi = true;
         try
         {
-            _defaultPatchesFolder = Path.Combine(AppContext.BaseDirectory, "patches");
+            _defaultPatchesFolder = _appPaths.PatchesFolder;
             _settings = await _settingsService.LoadAsync();
             var initialPatchesFolder = await _patchStorageService.ResolvePatchesFolderAsync(_settings, _defaultPatchesFolder);
 
             ApplySettingsToUi();
+            _viewModel.StatusText = "Loading SQL Server suggestions...";
             await LoadSqlServerSuggestionsAsync();
+            _viewModel.StatusText = "Loading patch library...";
             await SetPatchesFolderAsync(initialPatchesFolder, closeAdminWindow: false);
+            _sessionLog.WriteLine($"[{DateTime.Now:HH:mm:ss}] App started in portable mode. Root: {_appPaths.RootDirectory}");
             RefreshRunSummary();
             await PersistSettingsAsync();
             FocusPrimaryInput();
+            _viewModel.StatusText = "Ready";
         }
         catch (Exception ex)
         {
+            _sessionLog.WriteLine($"[{DateTime.Now:HH:mm:ss}] Startup failed: {ex.Message}");
             _dialogs.ShowError($"Startup failed: {ex.Message}", "Startup Error");
             SetBanner(NotificationLevel.Error, "Startup failed. See error message.");
         }
@@ -132,8 +155,8 @@ public partial class MainWindow : Window
     private void ApplyReadyState()
     {
         _viewModel.PatchVersionText = "";
-        _viewModel.StatusText = "Ready";
-        _viewModel.ResultSummary = "";
+        _viewModel.AppBuildText = AppMetadata.BuildLabel;
+        _viewModel.StatusText = "Loading portable workspace...";
         _viewModel.LogText = "";
         _viewModel.SqlTestResultText = "";
         _viewModel.SourceFileHintText = "";
@@ -149,24 +172,23 @@ public partial class MainWindow : Window
         _runWarnings.Clear();
         UpdateWarningChip(0);
         bdStatusBanner.Visibility = Visibility.Collapsed;
-
-        _viewModel.RunSummaryVersions = "Versions: Select source and target versions";
-        _viewModel.RunSummaryPlan = "Plan: Select versions to preview steps and script count.";
-        _viewModel.RunSummaryTemp = "Temp folder: C:\\temp\\MagDbPatcher";
-        _viewModel.RunSummaryOutput = "Output: Not generated yet";
+        ApplyRunExecutionState(_runExecutionPresenter.BuildInitialState());
 
         btnRetryFromValidation.IsEnabled = false;
         btnCopyDiagnostics.IsEnabled = false;
         btnOpenOutputFolder.IsEnabled = false;
         btnCancel.IsEnabled = false;
 
+        Title = $"{AppMetadata.Title} {AppMetadata.DisplayVersion}";
         ApplyGuidanceState(StepGuidanceState.Initial);
     }
 
     private void ApplySettingsToUi()
     {
         var snapshot = _settingsBinder.BuildViewSnapshot(_settings);
-        txtLastImportedPack.Text = snapshot.LastImportedPack;
+        txtLastImportedPack.Text = string.IsNullOrWhiteSpace(snapshot.LastImportedPack)
+            ? "Normal updates arrive as a replacement app folder. Use patch-pack import only for manual admin updates."
+            : snapshot.LastImportedPack;
 
         _viewModel.RecentBackupFiles.Clear();
         foreach (var item in snapshot.RecentBackups)
@@ -177,6 +199,9 @@ public partial class MainWindow : Window
 
         cmbSqlServer.Text = snapshot.LastSqlServer;
         txtSqlUsername.Text = snapshot.SqlUsername;
+        txtTempFolder.Text = snapshot.PatchTempFolder;
+        txtWarningThreshold.Text = snapshot.WarningThreshold.ToString(CultureInfo.InvariantCulture);
+        cmbErrorMode.SelectedValue = snapshot.PatchErrorMode;
 
         rbAuthSql.IsChecked = snapshot.SqlAuthMode == SqlAuthMode.SqlLogin;
         rbAuthWindows.IsChecked = snapshot.SqlAuthMode != SqlAuthMode.SqlLogin;
@@ -189,7 +214,7 @@ public partial class MainWindow : Window
             return txtPatchesFolder.Text.Trim();
         if (!string.IsNullOrWhiteSpace(_settings.PatchesFolder))
             return _settings.PatchesFolder!;
-        return _patchStorageService.GetDefaultUserPatchesFolder();
+        return _patchStorageService.GetDefaultPatchesFolder();
     }
 
     private async Task LoadSqlServerSuggestionsAsync()
@@ -234,7 +259,7 @@ public partial class MainWindow : Window
         await _versionService.LoadVersionsAsync();
         _runOrchestrator.UpdateVersionService(_versionService);
 
-        _patchImportCoordinator = new PatchPackImportCoordinator(new PatchPackService());
+        _patchImportCoordinator = new PatchPackImportCoordinator(new PatchPackService(_appPaths.BackupsDirectory));
 
         if (closeAdminWindow && _adminWindow != null)
         {
@@ -358,9 +383,11 @@ public partial class MainWindow : Window
     private void RefreshRunSummary()
     {
         if (!_isUiInitialized ||
-            txtRunSummaryVersions == null ||
-            txtRunSummaryTemp == null ||
-            txtRunSummaryOutputAndWarnings == null ||
+            txtRunSummarySource == null ||
+            txtRunSummaryUpgradePath == null ||
+            txtRunSummaryConnection == null ||
+            txtRunSummaryOutput == null ||
+            txtRunSummarySafeguards == null ||
             txtRunSummaryPlan == null ||
             cmbSourcePath == null ||
             cmbFromVersion == null ||
@@ -370,61 +397,26 @@ public partial class MainWindow : Window
             return;
         }
 
+        SyncExecutionSettingsFromUi();
         ApplyRunSummaryState(BuildRunSummaryState());
         UpdateGuidanceUi();
     }
 
     private RunSummaryState BuildRunSummaryState()
     {
-        var sourcePath = (cmbSourcePath.Text ?? "").Trim();
-        var sourceHint = "";
-        var sourceHintKind = SourceFileHintKind.None;
-
-        if (!string.IsNullOrWhiteSpace(sourcePath) && !File.Exists(sourcePath))
-        {
-            sourceHint = "File not found.";
-            sourceHintKind = SourceFileHintKind.Error;
-        }
-        else if (!string.IsNullOrWhiteSpace(sourcePath))
-        {
-            var info = new FileInfo(sourcePath);
-            var size = info.Length >= 1024L * 1024 * 1024
-                ? $"{info.Length / (1024.0 * 1024 * 1024):F1} GB"
-                : $"{info.Length / (1024.0 * 1024):F0} MB";
-            sourceHint = $"{info.Name}  ({size})";
-            sourceHintKind = SourceFileHintKind.Success;
-        }
-
-        var fromVersion = GetSelectedVersionId(cmbFromVersion) ?? "(not selected)";
-        var toVersion = GetSelectedVersionId(cmbToVersion) ?? "(not selected)";
-        var tempFolder = _settings.PatchTempFolder ?? @"C:\temp\MagDbPatcher";
-        var sqlServer = string.IsNullOrWhiteSpace(cmbSqlServer.Text) ? ".\\MAGSQL" : cmbSqlServer.Text.Trim();
-        var outputText = string.IsNullOrWhiteSpace(sourcePath)
-            ? "Output: Select a source backup to preview output path"
-            : $"Output: {BuildOutputBakPath(sourcePath, toVersion)}";
-        var planText = "Plan: Select source and target versions.";
-
-        if (_versionService != null && fromVersion != "(not selected)" && toVersion != "(not selected)")
-        {
-            try
-            {
-                var steps = _versionService.CalculateUpgradePath(fromVersion, toVersion);
-                var totalScripts = steps.Sum(s => s.Scripts.Count);
-                planText = $"Plan: {steps.Count} step(s), {totalScripts} script(s)";
-            }
-            catch (Exception ex)
-            {
-                planText = $"Plan: {ex.Message}";
-            }
-        }
-
-        return new RunSummaryState(
-            SourceFileHint: sourceHint,
-            SourceFileHintKind: sourceHintKind,
-            VersionsText: $"Versions: {fromVersion} -> {toVersion}\nSQL: {sqlServer}",
-            TempFolderText: $"Temp folder: {tempFolder}",
-            OutputText: outputText,
-            PlanText: planText);
+        var request = BuildRunRequest();
+        return _runSummaryComposer.Compose(new RunSummaryInput(
+            SourceBakPath: request.SourceBakPath,
+            FromVersionId: request.FromVersionId,
+            ToVersionId: request.ToVersionId,
+            SqlServer: request.ConnectionSettings.Server,
+            SqlAuthMode: request.ConnectionSettings.AuthMode,
+            SqlConnectionTestPassed: _sqlConnectionTestCoordinator.MatchesLastSuccessfulSettings(request.ConnectionSettings),
+            TempFolder: request.TempFolder,
+            ErrorMode: request.ExecutionOptions.ErrorMode,
+            WarningThreshold: request.ExecutionOptions.WarningThreshold,
+            OutputBakPath: request.OutputBakPath,
+            VersionService: _versionService));
     }
 
     private void ApplyRunSummaryState(RunSummaryState state)
@@ -438,10 +430,12 @@ public partial class MainWindow : Window
             _ => (Brush)FindResource("TextMuted")
         };
 
-        _viewModel.RunSummaryVersions = state.VersionsText;
-        _viewModel.RunSummaryTemp = state.TempFolderText;
+        _viewModel.RunSummarySource = state.SourceText;
+        _viewModel.RunSummaryUpgradePath = state.UpgradePathText;
+        _viewModel.RunSummaryConnection = state.ConnectionText;
         _viewModel.RunSummaryOutput = state.OutputText;
         _viewModel.RunSummaryPlan = state.PlanText;
+        _viewModel.RunSummarySafeguards = state.SafeguardsText;
     }
 
     private void UpdateGuidanceUi()
@@ -456,10 +450,7 @@ public partial class MainWindow : Window
         var fromVersion = GetSelectedVersionId(cmbFromVersion);
         var toVersion = GetSelectedVersionId(cmbToVersion);
         var settings = BuildSqlConnectionSettings();
-        var sqlSignature = BuildSqlSignature(settings);
-
-        if (!string.Equals(sqlSignature, _lastSqlTestSignature, StringComparison.Ordinal))
-            _sqlConnectionTestPassed = false;
+        _sqlConnectionTestCoordinator.InvalidateIfSettingsChanged(SqlConnectionTestCoordinator.BuildSignature(settings));
 
         var sourceExists = !string.IsNullOrWhiteSpace(sourcePath) && File.Exists(sourcePath);
         var sourcePathEntered = !string.IsNullOrWhiteSpace(sourcePath);
@@ -490,7 +481,7 @@ public partial class MainWindow : Window
             LocalSqlServer: localSql,
             HasSqlUser: hasSqlUser,
             HasSqlPassword: hasSqlPassword,
-            SqlConnectionTestPassed: _sqlConnectionTestPassed,
+            SqlConnectionTestPassed: _sqlConnectionTestCoordinator.IsConnectionTestPassed,
             RunEngineReady: _runOrchestrator.IsReady));
 
         if (state.RunReady)
@@ -517,15 +508,16 @@ public partial class MainWindow : Window
         SetStepStatusChip(bdStep3Status, txtStep3Status, RunStateEvaluator.GetStepText(state.Step3State), state.Step3State);
         SetStepStatusChip(bdStep4Status, txtStep4Status, state.RunReady ? "Ready" : RunStateEvaluator.GetStepText(state.Step4State), state.Step4State);
 
-        _viewModel.NextActionText = state.NextActionText;
-        _viewModel.PatchActionHint = state.RunReady ? "Ready to run. Click Start Patch." : state.PatchHintText;
+        _viewModel.NextActionText = state.RunReady
+            ? "Next: Review the run summary, then click Start Patch."
+            : state.NextActionText;
+        _viewModel.PatchActionHint = state.RunReady
+            ? "Ready to run. Review the patch path, output, and safeguards, then click Start Patch."
+            : state.PatchHintText;
 
         if (_runCancellation == null)
             btnPatch.IsEnabled = state.RunReady;
     }
-
-    private static string BuildSqlSignature(SqlConnectionSettings settings)
-        => $"{settings.Server}|{settings.AuthMode}|{settings.Username}|{settings.Password}";
 
     private void SetStepStatusChip(Border border, TextBlock textBlock, string text, RunStepState state)
     {
@@ -556,8 +548,65 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ApplyRunExecutionState(RunExecutionState state)
+    {
+        _viewModel.ProgressValue = state.ProgressValue;
+        _viewModel.StatusText = state.StatusText;
+        _viewModel.RunProgressDetailText = state.DetailText;
+        _viewModel.ResultSummary = state.ResultSummary;
+    }
+
+    private void ApplyRunCompletionState(PatchRunResult result, RunCompletionState state)
+    {
+        _viewModel.StatusText = state.StatusText;
+        _viewModel.RunProgressDetailText = state.DetailText;
+        _viewModel.ResultSummary = state.ResultSummary;
+        btnOpenOutputFolder.IsEnabled = state.EnableOpenOutputFolder;
+        btnCopyDiagnostics.IsEnabled = state.EnableCopyDiagnostics;
+        expRunWarnings.IsExpanded = state.ExpandDiagnostics;
+        UpdateWarningChip(state.WarningCount);
+        SetBanner(state.Banner);
+    }
+
+    private void ApplySqlConnectionFeedback(SqlConnectionTestFeedback feedback)
+    {
+        _viewModel.SqlTestResultText = feedback.Message;
+        txtSqlTestResult.Foreground = feedback.Tone switch
+        {
+            SqlTestMessageTone.Success => (Brush)FindResource("Success"),
+            SqlTestMessageTone.Error => (Brush)FindResource("Error"),
+            _ => (Brush)FindResource("TextMuted")
+        };
+
+        if (feedback.Banner != null)
+            SetBanner(feedback.Banner);
+    }
+
     private string BuildOutputBakPath(string sourceBakPath, string toVersionId)
         => _requestBuilder.BuildOutputBakPath(sourceBakPath, toVersionId);
+
+    private void SyncExecutionSettingsFromUi()
+    {
+        _settings.PatchTempFolder = string.IsNullOrWhiteSpace(txtTempFolder.Text)
+            ? _patchStorageService.GetDefaultTempFolder()
+            : txtTempFolder.Text.Trim();
+        _settings.WarningThreshold = ParseWarningThreshold();
+        _settings.PatchErrorMode = GetSelectedPatchErrorMode();
+    }
+
+    private PatchErrorMode GetSelectedPatchErrorMode()
+    {
+        return cmbErrorMode.SelectedValue is PatchErrorMode mode
+            ? mode
+            : PatchErrorMode.WarnAndContinue;
+    }
+
+    private int ParseWarningThreshold()
+    {
+        return int.TryParse(txtWarningThreshold.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var threshold) && threshold > 0
+            ? threshold
+            : 10;
+    }
 
     private void UpdateAuthModeUi()
     {
@@ -565,6 +614,38 @@ public partial class MainWindow : Window
             return;
 
         pnlSqlLogin.Visibility = rbAuthSql.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void EditableComboTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_isLoadingUi)
+            return;
+
+        RefreshRunSummary();
+    }
+
+    private void AdvancedRunSettingTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_isLoadingUi)
+            return;
+
+        RefreshRunSummary();
+    }
+
+    private void AdvancedRunSettingSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_isLoadingUi)
+            return;
+
+        RefreshRunSummary();
+    }
+
+    private void AdvancedRunSettingPasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (_isLoadingUi)
+            return;
+
+        RefreshRunSummary();
     }
 
     private void SetBanner(NotificationLevel level, string message, bool warningBanner = false)
@@ -628,17 +709,19 @@ public partial class MainWindow : Window
 
     private SqlConnectionSettings BuildSqlConnectionSettings()
     {
+        var sqlLogin = rbAuthSql.IsChecked == true;
         return new SqlConnectionSettings
         {
             Server = (cmbSqlServer.Text ?? "").Trim(),
-            AuthMode = rbAuthSql.IsChecked == true ? SqlAuthMode.SqlLogin : SqlAuthMode.Windows,
+            AuthMode = sqlLogin ? SqlAuthMode.SqlLogin : SqlAuthMode.Windows,
             Username = (txtSqlUsername.Text ?? "").Trim(),
-            Password = pwdSqlPassword.Password
+            Password = sqlLogin ? pwdSqlPassword.Password : null
         };
     }
 
     private PatchRunRequest BuildRunRequest()
     {
+        SyncExecutionSettingsFromUi();
         var sourceBakPath = (cmbSourcePath.Text ?? "").Trim();
         var fromVersion = GetSelectedVersionId(cmbFromVersion) ?? "";
         var toVersion = GetSelectedVersionId(cmbToVersion) ?? "";
@@ -657,6 +740,7 @@ public partial class MainWindow : Window
     {
         var stamped = $"[{DateTime.Now:HH:mm:ss}] {line}";
         _pendingLogLines.Enqueue(stamped);
+        _sessionLog.WriteLine(stamped);
         if (!_logFlushTimer.IsEnabled)
             _logFlushTimer.Start();
     }
@@ -710,6 +794,17 @@ public partial class MainWindow : Window
         btnAdminTools.IsEnabled = state.AdminToolsEnabled;
         btnCopyPatchPlan.IsEnabled = state.CopyPatchPlanEnabled;
         btnImportPatchPack.IsEnabled = state.ImportPatchPackEnabled;
+        cmbSqlServer.IsEnabled = state.SourceSelectorEnabled;
+        btnTestSql.IsEnabled = state.BrowseEnabled;
+        rbAuthWindows.IsEnabled = state.SourceSelectorEnabled;
+        rbAuthSql.IsEnabled = state.SourceSelectorEnabled;
+        txtSqlUsername.IsEnabled = state.SourceSelectorEnabled;
+        pwdSqlPassword.IsEnabled = state.SourceSelectorEnabled;
+        txtTempFolder.IsEnabled = state.SourceSelectorEnabled;
+        btnBrowseTempFolder.IsEnabled = state.BrowseEnabled;
+        btnResetTempFolder.IsEnabled = state.BrowseEnabled;
+        cmbErrorMode.IsEnabled = state.SourceSelectorEnabled;
+        txtWarningThreshold.IsEnabled = state.SourceSelectorEnabled;
         UpdateGuidanceUi();
     }
 
@@ -731,6 +826,7 @@ public partial class MainWindow : Window
 
     private async Task PersistSettingsAsync()
     {
+        SyncExecutionSettingsFromUi();
         _settings = _settingsBinder.BuildPersistedSettings(new SettingsPersistInput
         {
             Existing = _settings,
@@ -759,18 +855,19 @@ public partial class MainWindow : Window
     private string BuildPatchPlanText()
     {
         var request = BuildRunRequest();
-        return _runOrchestrator.BuildPatchPlan(request);
+        return _runDiagnosticsCoordinator.BuildPatchPlan(_runOrchestrator, request);
     }
 
     private string BuildDiagnosticsText()
     {
         FlushPendingLogLines();
-        return _runOrchestrator.BuildDiagnostics(
+        return _runDiagnosticsCoordinator.BuildDiagnostics(
+            _runOrchestrator,
+            BuildRunRequest(),
             _viewModel.StatusText,
             _viewModel.ResultSummary,
             _runWarnings,
             _retainedLogLines,
-            BuildRunRequest(),
             _versionService?.NonFatalDiagnostics);
     }
 
@@ -811,7 +908,7 @@ public partial class MainWindow : Window
 
     private async Task<string> ResetPatchesFolderFromAdminAsync()
     {
-        var writableFolder = _patchStorageService.GetDefaultUserPatchesFolder();
+        var writableFolder = _patchStorageService.GetDefaultPatchesFolder();
         await _patchStorageService.EnsureSeededAsync(writableFolder, _defaultPatchesFolder);
         await SetPatchesFolderAsync(writableFolder, closeAdminWindow: false);
         return writableFolder;
@@ -876,7 +973,6 @@ public partial class MainWindow : Window
         if (!_isUiInitialized)
             return;
 
-        _sqlConnectionTestPassed = false;
         UpdateAuthModeUi();
         RefreshRunSummary();
     }
@@ -927,53 +1023,67 @@ public partial class MainWindow : Window
         var settings = BuildSqlConnectionSettings();
         if (string.IsNullOrWhiteSpace(settings.Server))
         {
-            _viewModel.SqlTestResultText = "Enter a SQL Server value.";
-            txtSqlTestResult.Foreground = (Brush)FindResource("Error");
+            ApplySqlConnectionFeedback(_sqlConnectionTestCoordinator.CreateMissingServerFeedback());
             return;
         }
 
         if (!LocalSqlValidator.IsLocalServer(settings.Server))
         {
-            _viewModel.SqlTestResultText = "Only local SQL Server instances are allowed.";
-            txtSqlTestResult.Foreground = (Brush)FindResource("Error");
+            ApplySqlConnectionFeedback(_sqlConnectionTestCoordinator.CreateNonLocalServerFeedback());
             return;
         }
 
         btnTestSql.IsEnabled = false;
-        _viewModel.SqlTestResultText = "Testing...";
-        txtSqlTestResult.Foreground = (Brush)FindResource("TextMuted");
+        ApplySqlConnectionFeedback(_sqlConnectionTestCoordinator.CreateTestingFeedback());
 
         try
         {
             var ok = await _runOrchestrator.TestConnectionAsync(settings);
             if (ok)
             {
-                _sqlConnectionTestPassed = true;
-                _lastSqlTestSignature = BuildSqlSignature(settings);
-                _viewModel.SqlTestResultText = "Connection successful.";
-                txtSqlTestResult.Foreground = (Brush)FindResource("Success");
-                SetBanner(NotificationLevel.Success, "SQL connection successful.");
+                ApplySqlConnectionFeedback(_sqlConnectionTestCoordinator.RegisterSuccess(settings));
             }
             else
             {
-                _sqlConnectionTestPassed = false;
-                _viewModel.SqlTestResultText = "Failed to connect.";
-                txtSqlTestResult.Foreground = (Brush)FindResource("Error");
-                SetBanner(NotificationLevel.Error, "SQL connection failed. Check server/auth settings.");
+                ApplySqlConnectionFeedback(_sqlConnectionTestCoordinator.RegisterFailure(
+                    "Failed to connect.",
+                    "SQL connection failed. Check server/auth settings."));
             }
         }
         catch (Exception ex)
         {
-            _sqlConnectionTestPassed = false;
-            _viewModel.SqlTestResultText = ex.Message;
-            txtSqlTestResult.Foreground = (Brush)FindResource("Error");
-            SetBanner(NotificationLevel.Error, "SQL connection test failed.");
+            ApplySqlConnectionFeedback(_sqlConnectionTestCoordinator.RegisterFailure(
+                ex.Message,
+                "SQL connection test failed."));
         }
         finally
         {
             btnTestSql.IsEnabled = true;
+            RefreshRunSummary();
             UpdateGuidanceUi();
         }
+    }
+
+    private void BtnBrowseTempFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Select temp folder",
+            InitialDirectory = string.IsNullOrWhiteSpace(txtTempFolder.Text) ? Environment.CurrentDirectory : txtTempFolder.Text.Trim(),
+            Multiselect = false
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        txtTempFolder.Text = dialog.FolderName;
+        RefreshRunSummary();
+    }
+
+    private void BtnResetTempFolder_Click(object sender, RoutedEventArgs e)
+    {
+        txtTempFolder.Text = _patchStorageService.GetDefaultTempFolder();
+        RefreshRunSummary();
     }
 
     private async void BtnChangePatchesFolder_Click(object sender, RoutedEventArgs e)
@@ -1011,11 +1121,11 @@ public partial class MainWindow : Window
 
     private async void BtnResetPatchesFolder_Click(object sender, RoutedEventArgs e)
     {
-        var writableFolder = _patchStorageService.GetDefaultUserPatchesFolder();
+        var writableFolder = _patchStorageService.GetDefaultPatchesFolder();
         await _patchStorageService.EnsureSeededAsync(writableFolder, _defaultPatchesFolder);
         await SetPatchesFolderAsync(writableFolder);
         await PersistSettingsAsync();
-        SetBanner(NotificationLevel.Success, "Patches folder reset to local writable default.");
+        SetBanner(NotificationLevel.Success, "Patches folder reset to the portable app folder.");
     }
 
     private async void BtnImportPatchPack_Click(object sender, RoutedEventArgs e)
@@ -1035,6 +1145,7 @@ public partial class MainWindow : Window
         btnImportPatchPack.IsEnabled = false;
         try
         {
+            _sessionLog.WriteLine($"[{DateTime.Now:HH:mm:ss}] Importing patch pack: {dialog.FileName}");
             var result = await _patchImportCoordinator.ImportAsync(new PatchImportRequest
             {
                 ZipPath = dialog.FileName,
@@ -1048,9 +1159,11 @@ public partial class MainWindow : Window
             await PersistSettingsAsync();
 
             SetBanner(NotificationLevel.Success, $"Patch pack imported. Backup: {result.BackupFolder}");
+            _sessionLog.WriteLine($"[{DateTime.Now:HH:mm:ss}] Patch pack imported successfully. Backup: {result.BackupFolder}");
         }
         catch (Exception ex)
         {
+            _sessionLog.WriteLine($"[{DateTime.Now:HH:mm:ss}] Patch pack import failed: {ex.Message}");
             _dialogs.ShowError(ex.Message, "Import Failed");
             SetBanner(NotificationLevel.Error, "Patch pack import failed.");
         }
@@ -1172,10 +1285,9 @@ public partial class MainWindow : Window
         expRunWarnings.IsExpanded = false;
 
         _viewModel.StatusText = "Starting...";
-        _viewModel.ResultSummary = "";
-        _viewModel.ProgressValue = 0;
         btnOpenOutputFolder.IsEnabled = false;
         btnCopyDiagnostics.IsEnabled = false;
+        ApplyRunExecutionState(_runExecutionPresenter.BuildStartingState(validation.Request));
 
         ApplyRunUiLock(isRunning: true);
         SetBanner(NotificationLevel.Info, "Patch run started.");
@@ -1186,14 +1298,12 @@ public partial class MainWindow : Window
         {
             var progress = new Progress<PatchRunProgress>(p =>
             {
-                _viewModel.ProgressValue = p.Percent;
-                _viewModel.StatusText = p.Message;
+                ApplyRunExecutionState(_runExecutionPresenter.BuildProgressState(p));
             });
 
             var logProgress = new Progress<string>(AppendLogLine);
             var result = await _runOrchestrator.RunAsync(validation.Request, progress, logProgress, _runCancellation.Token);
 
-            _viewModel.ResultSummary = result.Summary;
             _lastOutputPath = result.OutputPath;
 
             _runWarnings.Clear();
@@ -1203,47 +1313,16 @@ public partial class MainWindow : Window
                     $"SQL {warning.ErrorNumber} in {warning.ScriptName} (batch {warning.BatchIndex}/{warning.BatchCount}): {warning.ErrorMessage}");
             }
 
-            UpdateWarningChip(result.WarningCount);
-
+            var completionState = _runExecutionPresenter.BuildCompletionState(result, HasRetainedLogs());
+            ApplyRunCompletionState(result, completionState);
             if (result.Success)
-            {
-                _viewModel.StatusText = "Completed";
                 _viewModel.ProgressValue = 100;
-                btnOpenOutputFolder.IsEnabled = !string.IsNullOrWhiteSpace(result.OutputPath);
-                btnCopyDiagnostics.IsEnabled = result.WarningCount > 0 || HasRetainedLogs();
-                if (result.WarningThresholdExceeded)
-                {
-                    SetBanner(
-                        NotificationLevel.Info,
-                        $"Patch completed with warnings above threshold ({result.WarningCount}/{result.WarningThreshold}).",
-                        warningBanner: true);
-                }
-                else
-                {
-                    SetBanner(result.WarningCount > 0 ? NotificationLevel.Info : NotificationLevel.Success,
-                        result.WarningCount > 0 ? "Patch completed with warnings." : "Patch completed successfully.",
-                        warningBanner: result.WarningCount > 0);
-                }
-            }
-            else if (result.Cancelled)
-            {
-                _viewModel.StatusText = "Cancelled";
-                btnCopyDiagnostics.IsEnabled = HasRetainedLogs() || result.WarningCount > 0;
-                SetBanner(NotificationLevel.Info, "Patch run cancelled.");
-            }
-            else
-            {
-                _viewModel.StatusText = "Failed";
-                btnCopyDiagnostics.IsEnabled = true;
-                SetBanner(NotificationLevel.Error, "Patch failed. Review diagnostics.");
-            }
         }
         catch (Exception ex)
         {
-            _viewModel.StatusText = "Failed";
-            _viewModel.ResultSummary = ex.Message;
-            btnCopyDiagnostics.IsEnabled = true;
-            SetBanner(NotificationLevel.Error, "Patch failed unexpectedly.");
+            ApplyRunCompletionState(
+                new PatchRunResult { Summary = ex.Message },
+                _runExecutionPresenter.BuildUnexpectedFailureState(ex));
         }
         finally
         {

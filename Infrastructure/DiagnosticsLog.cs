@@ -5,10 +5,12 @@ namespace MagDbPatcher.Infrastructure;
 
 public static class DiagnosticsLog
 {
-    private static readonly string LogPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "MagDbPatcher",
-        "diagnostics.log");
+    private static readonly string LogPath = AppRuntimePaths.CreateDefault().DiagnosticsLogPath;
+
+    public static string CurrentPath => LogPath;
+
+    public static void Info(string category, string message)
+        => Write("info", category, message, ex: null);
 
     public static void Warning(string category, string message, Exception? ex = null)
         => Write("warning", category, message, ex);

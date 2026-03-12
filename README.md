@@ -1,59 +1,107 @@
 # ME_ACS SQL Patcher
 
-A tool to patch MagEtegra database backups (`.bak`) from one version to another.
+Windows desktop tool for patching MagEtegra SQL Server backup files (`.bak`) from one supported version to another.
 
----
+## What This Repo Contains
 
-## Quick Start
+- WPF desktop application targeting `.NET 8`
+- SQL patch library under `patches/`
+- xUnit test project covering patching, settings, and storage behavior
+- Packaging script for producing a portable support handoff ZIP
 
-1. Run `ME_ACS_SQL_Patcher.exe`.
-2. Select your source `.bak` file.
-3. Choose **From** version (the app auto-selects **To = latest reachable**).
-4. Click **Start Patch**.
+## Core Workflow
 
-Default SQL target on fresh installs is `.\\MAGSQL`.
+1. Select a source `.bak` file.
+2. Choose the starting version.
+3. Let the app resolve the latest reachable target version.
+4. Run the patch workflow against a local SQL Server instance.
 
----
+Default SQL target is `.\\MAGSQL`.
 
-## Build Distribution ZIP
+## Repository Structure
+
+```text
+.
+|-- Assets/                  Application icons and images
+|-- Infrastructure/         Runtime helpers and support utilities
+|-- Models/                 Domain and configuration models
+|-- Services/               Application services and patching logic
+|-- ViewModels/             View-model layer
+|-- Workflows/              End-to-end patch execution flow
+|-- MagDbPatcher.Tests/     Automated test project
+|-- patches/                Versioned SQL patch definitions
+|-- tools/                  Support scripts such as patch-pack creation
+|-- package.ps1             Portable packaging entry point
+|-- ME_ACS_SQL_Patcher.sln  Solution file
+```
+
+## Development
+
+### Requirements
+
+- Windows
+- .NET SDK 8.x
+- Local SQL Server instance (Express, LocalDB, or full SQL Server)
+- Permissions to restore, back up, create, and drop databases
+
+### Build
+
+```powershell
+dotnet build ME_ACS_SQL_Patcher.sln
+```
+
+### Test
+
+```powershell
+dotnet test ME_ACS_SQL_Patcher.sln
+```
+
+## Packaging
+
+Create the portable support package with:
 
 ```powershell
 .\package.ps1
 ```
 
-Output:
-- App payload: `publish/`
-- Shareable archive: `dist/ME_ACS_SQL_Patcher.zip`
+This produces:
 
-Default packaging is self-contained single-file (`win-x64`) so target PCs do not need a separate .NET runtime install.
+- `output\ME_ACS_SQL_Patcher\` for local verification
+- `dist\ME_ACS_SQL_Patcher.zip` for support handoff
 
----
+Default packaging is self-contained single-file `win-x64`, so target machines do not need a separate .NET runtime installation.
 
-## Install On Another PC (Portable, No Admin)
+## Support Handoff
 
-After extracting the ZIP, run:
+After packaging:
 
-```powershell
-.\scripts\Install-Portable.ps1 -SourceDir .\publish
+1. Send `dist\ME_ACS_SQL_Patcher.zip` to support.
+2. Support extracts the ZIP to any folder.
+3. Support runs `ME_ACS_SQL_Patcher.exe` from the extracted root.
+4. Future updates are delivered by replacing the extracted folder with the next packaged release.
+
+Portable runtime layout:
+
+```text
+ME_ACS_SQL_Patcher.exe
+patches\
+settings.json
+logs\
+backups\
 ```
 
-What it does:
-- Installs app files to `%LOCALAPPDATA%\MagDbPatcher\app`
-- Creates desktop and start-menu shortcuts
-- Preserves user settings and imported patches in `%LOCALAPPDATA%\MagDbPatcher`
+Runtime notes:
 
-Optional switches:
-- `-NoDesktopShortcut`
-- `-NoStartMenuShortcut`
-- `-NoLaunch`
+- `settings.json` and `logs\` live beside the EXE.
+- `patches\` is the active patch library.
+- `backups\` is used during manual patch-pack import.
+- Temporary restore workspace is stored in `%ProgramData%\ME_ACS_SQL_Patcher\temp`.
 
----
+## Patch Updates
 
-## Patch Updates (Without Rebuilding App)
+The normal release flow is to ship a fresh ZIP that already includes the latest `patches/` content.
 
-Operators can import new script packs directly in the app using **Import Patch Pack (.zip)**.
-
-Patch packs use this structure:
+For admin-only patch updates, the application also supports importing a patch pack ZIP with this structure:
 
 ```text
 MagPatchPack.zip
@@ -64,54 +112,36 @@ MagPatchPack.zip
     <version folders...>/*.sql
 ```
 
-Create a patch pack:
+Create a patch pack with:
 
 ```powershell
 .\tools\New-PatchPack.ps1 -PatchesFolder .\patches -PackVersion 20260203 -OutFile .\MagPatchPack.zip -Notes "7.2.3 build patches"
 ```
 
-Import result:
-- Existing active patch folder is backed up as `*_backup_YYYYMMDD_HHMMSS`.
-- New pack becomes active immediately after validation.
+## CI
 
----
-
-## Patch Storage Behavior
-
-- Fresh users default to writable patches path: `%LOCALAPPDATA%\MagDbPatcher\patches`
-- On first run, bundled app patches are copied there if the folder is empty
-- Existing users with a configured patches folder are not overridden
-
----
-
-## Requirements
-
-- Windows
-- Local SQL Server instance (Express/LocalDB/full). Remote servers are not supported.
-- SQL permissions to restore, backup, create, and drop databases
-
----
+GitHub Actions is configured to restore, build, and test the solution on Windows for pushes to `main` and pull requests.
 
 ## Troubleshooting
 
-| Issue | Solution |
-|------|------|
-| App does not open | Unblock downloaded ZIP in file Properties, then extract and run again |
-| Missing runtime error | Rebuild with `.\package.ps1` default mode (self-contained) |
-| SQL server not found | Install SQL Server Express or LocalDB |
-| No upgrade path | Check `versions.json` and patch definitions |
-| Version list looks wrong | Verify the active **Patches Folder** in app |
-
----
+| Issue | Suggested action |
+| --- | --- |
+| App does not open | Unblock the downloaded ZIP in file Properties, then extract and run again |
+| Missing runtime error | Rebuild using `.\package.ps1` in self-contained mode |
+| Startup says package is incomplete | Verify `patches\versions.json` and required `.sql` files are present |
+| SQL Server not found | Install SQL Server Express or LocalDB |
+| No upgrade path | Verify `versions.json` and patch definitions |
+| Version list looks wrong | Check the configured active patches folder |
 
 ## Key Files
 
-| File | Purpose |
-|------|------|
-| `MainWindow.xaml` | Main UI |
-| `MainWindow.xaml.cs` | Main workflow logic |
-| `Services/PatchStorageService.cs` | Writable patch folder default + first-run seed logic |
-| `Services/VersionService.cs` | Version/patch definitions and upgrade path logic |
-| `Services/PatchPackService.cs` | Patch pack import + validation + atomic swap |
-| `package.ps1` | Build + package ZIP |
-| `scripts/Install-Portable.ps1` | Per-user portable installation helper |
+| File | Responsibility |
+| --- | --- |
+| `MainWindow.xaml` | Main user interface |
+| `MainWindow.xaml.cs` | Main application interaction flow |
+| `Infrastructure/AppRuntimePaths.cs` | Portable app layout for settings, logs, patches, temp data, and backups |
+| `Services/PortableAppBootstrapService.cs` | Startup validation for package completeness and folder writability |
+| `Services/PatchStorageService.cs` | Active patch-folder resolution |
+| `Services/VersionService.cs` | Version graph and reachable upgrade path logic |
+| `Services/PatchPackService.cs` | Patch-pack validation, backup, and atomic swap |
+| `package.ps1` | Packaging and ZIP generation |

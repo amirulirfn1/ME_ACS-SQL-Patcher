@@ -2,29 +2,65 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Threading;
+using MagDbPatcher.Infrastructure;
+using MagDbPatcher.Services;
 
 namespace MagDbPatcher;
 
 public partial class App : Application
 {
-    private static readonly string ErrorLogPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "MagDbPatcher",
-        "startup-errors.log");
+    private static readonly AppRuntimePaths AppPaths = AppRuntimePaths.CreateDefault();
+    private static readonly string ErrorLogPath = AppPaths.StartupErrorLogPath;
+    private SingleInstanceCoordinator? _singleInstanceCoordinator;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         RegisterGlobalExceptionHandlers();
+        base.OnStartup(e);
+        StartupWindow? startupWindow = null;
 
         try
         {
-            var mainWindow = new MainWindow();
+            _singleInstanceCoordinator = new SingleInstanceCoordinator(AppPaths, ActivateMainWindowAsync);
+            if (!_singleInstanceCoordinator.IsPrimaryInstance)
+            {
+                var activatedExistingWindow = await _singleInstanceCoordinator.TrySignalPrimaryInstanceAsync(TimeSpan.FromSeconds(2));
+                if (!activatedExistingWindow)
+                {
+                    MessageBox.Show(
+                        "ME_ACS SQL Patcher is already running, but the existing window could not be activated.\n\n" +
+                        "Please bring the existing app window to the front manually.",
+                        "Already Running",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+
+                Shutdown(0);
+                return;
+            }
+
+            _singleInstanceCoordinator.StartListening();
+            DiagnosticsLog.Info("startup", $"Primary instance started. Root={AppPaths.RootDirectory}");
+
+            startupWindow = new StartupWindow();
+            startupWindow.Show();
+            startupWindow.UpdateStatus("Checking portable package...");
+
+            var bootstrap = new PortableAppBootstrapService(AppPaths);
+            await bootstrap.EnsureReadyAsync(new Progress<string>(message => startupWindow.UpdateStatus(message)));
+
+            startupWindow.UpdateStatus("Opening the patch dashboard...");
+            var mainWindow = new MainWindow(AppPaths);
             MainWindow = mainWindow;
             mainWindow.Show();
-            base.OnStartup(e);
+            WindowActivationService.BringToFront(mainWindow);
+            startupWindow.Close();
+            startupWindow = null;
         }
         catch (Exception ex)
         {
+            startupWindow?.Close();
+            DiagnosticsLog.Error("startup", "Application startup failed.", ex);
             LogException("OnStartup", ex);
             MessageBox.Show(
                 "The app failed to start.\n\n" +
@@ -37,6 +73,13 @@ public partial class App : Application
         }
     }
 
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _singleInstanceCoordinator?.Dispose();
+        _singleInstanceCoordinator = null;
+        base.OnExit(e);
+    }
+
     private void RegisterGlobalExceptionHandlers()
     {
         DispatcherUnhandledException += OnDispatcherUnhandledException;
@@ -46,6 +89,7 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
+        DiagnosticsLog.Error("dispatcher", "Unhandled UI exception.", e.Exception);
         LogException("DispatcherUnhandledException", e.Exception);
         MessageBox.Show(
             "A fatal UI error occurred.\n\n" +
@@ -61,13 +105,21 @@ public partial class App : Application
     private void OnUnhandledException(object? sender, UnhandledExceptionEventArgs e)
     {
         var ex = e.ExceptionObject as Exception ?? new Exception("Unknown unhandled exception.");
+        DiagnosticsLog.Error("app-domain", "Unhandled non-UI exception.", ex);
         LogException("AppDomainUnhandledException", ex);
     }
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
+        DiagnosticsLog.Error("task", "Unobserved task exception.", e.Exception);
         LogException("UnobservedTaskException", e.Exception);
         e.SetObserved();
+    }
+
+    private static Task ActivateMainWindowAsync()
+    {
+        WindowActivationService.BringToFront(Current?.MainWindow);
+        return Task.CompletedTask;
     }
 
     private static void LogException(string source, Exception ex)
