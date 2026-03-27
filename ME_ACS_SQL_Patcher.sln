@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ME_ACS SQL Patcher", "ME_ACS_SQL_Patcher.csproj", "{1C879037-D92B-32C0-F7F3-89F7517B15E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ME_ACS SQL Patcher", "src\ME_ACS_SQL_Patcher\ME_ACS_SQL_Patcher.csproj", "{1C879037-D92B-32C0-F7F3-89F7517B15E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ME_ACS SQL Patcher.Tests", "MagDbPatcher.Tests\MagDbPatcher.Tests.csproj", "{399E4512-EACB-9100-C019-BF41D84BF3F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ME_ACS SQL Patcher.Tests", "tests\MagDbPatcher.Tests\MagDbPatcher.Tests.csproj", "{399E4512-EACB-9100-C019-BF41D84BF3F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

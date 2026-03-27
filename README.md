@@ -7,7 +7,7 @@ Windows desktop tool for patching MagEtegra SQL Server backup files (`.bak`) fro
 - WPF desktop application targeting `.NET 8`
 - SQL patch library under `patches/`
 - xUnit test project covering patching, settings, and storage behavior
-- Packaging script for producing a portable support handoff ZIP
+- Packaging and install scripts under `build/`
 
 ## Core Workflow
 
@@ -18,20 +18,19 @@ Windows desktop tool for patching MagEtegra SQL Server backup files (`.bak`) fro
 
 Default SQL target is `.\\MAGSQL`.
 
+The app now treats the install folder as read-only runtime content. Settings, logs, backups, imported patch packs, and the active patch library live under `%LOCALAPPDATA%\MagDbPatcher\...` so manual app upgrades do not wipe teammate state.
+
 ## Repository Structure
 
 ```text
 .
-|-- Assets/                  Application icons and images
-|-- Infrastructure/         Runtime helpers and support utilities
-|-- Models/                 Domain and configuration models
-|-- Services/               Application services and patching logic
-|-- ViewModels/             View-model layer
-|-- Workflows/              End-to-end patch execution flow
-|-- MagDbPatcher.Tests/     Automated test project
+|-- src/ME_ACS_SQL_Patcher/  WPF application source, assets, themes, and services
+|-- tests/MagDbPatcher.Tests/ Automated test project
+|-- build/                  Packaging, install, and support scripts
 |-- patches/                Versioned SQL patch definitions
-|-- tools/                  Support scripts such as patch-pack creation
-|-- package.ps1             Portable packaging entry point
+|-- artifacts/              Generated build output only
+|-- output/                 Generated portable handoff folder
+|-- dist/                   Generated release ZIPs
 |-- ME_ACS_SQL_Patcher.sln  Solution file
 ```
 
@@ -58,50 +57,81 @@ dotnet test ME_ACS_SQL_Patcher.sln
 
 ## Packaging
 
-Create the portable support package with:
+Create a smoke-test publish folder and versioned handoff ZIP with:
 
 ```powershell
-.\package.ps1
+.\build\package.ps1
 ```
 
-This produces:
+Create the full release set, including the Velopack installer artifacts, with:
 
-- `output\ME_ACS_SQL_Patcher\` for local verification
-- `dist\ME_ACS_SQL_Patcher.zip` for support handoff
+```powershell
+dotnet tool restore
+.\build\release.ps1
+```
+
+`build\release.ps1` produces:
+
+- `output\` for local verification
+- `dist\ME_ACS_SQL_Patcher-<version>.zip` for manual handoff
+- `dist\installer\` with installer/update artifacts such as `ME_ACS_SQL_Patcher-win-Setup.exe`
+- `dist\release-manifest.json` describing the release outputs
+
+`build\package.ps1` still produces:
+
+- `output\` for local verification
+- `dist\ME_ACS_SQL_Patcher-<version>.zip` for manual handoff
 
 Default packaging is self-contained single-file `win-x64`, so target machines do not need a separate .NET runtime installation.
 
+Install the published build locally with:
+
+```powershell
+.\build\scripts\Install-Portable.ps1
+```
+
+By default the install script uses `output\` as its source and installs the EXE under `%LOCALAPPDATA%\MagDbPatcher\app`. If the source folder contains legacy portable `settings.json`, `logs\`, `backups\`, or `patches\`, the script carries them forward into the managed LocalAppData layout when missing.
+
 ## Support Handoff
 
-After packaging:
+For a manual teammate handoff:
 
-1. Send `dist\ME_ACS_SQL_Patcher.zip` to support.
-2. Support extracts the ZIP to any folder.
-3. Support runs `ME_ACS_SQL_Patcher.exe` from the extracted root.
-4. Future updates are delivered by replacing the extracted folder with the next packaged release.
+1. Build the release with `.\build\release.ps1`.
+2. Send either `dist\installer\ME_ACS_SQL_Patcher-win-Setup.exe` or `dist\ME_ACS_SQL_Patcher-<version>.zip`.
+3. Teammates install once, then run the app from the installed location.
+4. Future app updates are manual by default: replace the installed app with the next release package.
+5. Optional LAN-hosted prototype: publish `dist\installer\` into `update-host\feed` and point installed clients to that UNC path for internal update checks.
+6. Future SQL content updates should be delivered as patch packs whenever possible.
 
-Portable runtime layout:
+Installed runtime layout:
 
 ```text
-ME_ACS_SQL_Patcher.exe
-patches\
-settings.json
-logs\
-backups\
+%LOCALAPPDATA%\MagDbPatcher\
+  app\                     installed app binaries
+  settings.json
+  logs\
+  backups\
+  patches\                 active patch library used by the app
+  patch-packs\             archived imported patch packs
 ```
 
 Runtime notes:
 
-- `settings.json` and `logs\` live beside the EXE.
-- `patches\` is the active patch library.
-- `backups\` is used during manual patch-pack import.
+- `app\patches\` is only the bundled baseline library that ships with the app.
+- `%LOCALAPPDATA%\MagDbPatcher\patches\` is the active patch library used at runtime.
+- `%LOCALAPPDATA%\MagDbPatcher\backups\` stores patch-library rollback backups created during patch-pack import.
+- `%LOCALAPPDATA%\MagDbPatcher\patch-packs\` stores imported patch pack ZIPs for traceability.
 - Temporary restore workspace is stored in `%ProgramData%\ME_ACS_SQL_Patcher\temp`.
 
 ## Patch Updates
 
-The normal release flow is to ship a fresh ZIP that already includes the latest `patches/` content.
+The normal workflow is:
 
-For admin-only patch updates, the application also supports importing a patch pack ZIP with this structure:
+1. Ship a full app release for binary/UI/runtime changes.
+2. Ship a patch pack ZIP for new SQL scripts and patch-library-only changes.
+3. If you want to test PC-hosted app updates on your office network, use the scripts in `update-host\` and share that feed folder from your machine.
+
+The application supports importing a patch pack ZIP with this structure:
 
 ```text
 MagPatchPack.zip
@@ -115,8 +145,12 @@ MagPatchPack.zip
 Create a patch pack with:
 
 ```powershell
-.\tools\New-PatchPack.ps1 -PatchesFolder .\patches -PackVersion 20260203 -OutFile .\MagPatchPack.zip -Notes "7.2.3 build patches"
+.\build\tools\New-PatchPack.ps1 -PatchesFolder .\patches -PackVersion 20260203 -OutFile .\MagPatchPack.zip -Notes "7.2.3 build patches"
 ```
+
+After a patch pack import, the app validates the ZIP, swaps the active patch library atomically, stores a rollback backup, and archives the imported ZIP under `%LOCALAPPDATA%\MagDbPatcher\patch-packs\`.
+
+See [PATCH_OPERATOR_GUIDE.md](build/PATCH_OPERATOR_GUIDE.md) for the operator workflow when adding a new SQL script or version.
 
 ## CI
 
@@ -126,22 +160,24 @@ GitHub Actions is configured to restore, build, and test the solution on Windows
 
 | Issue | Suggested action |
 | --- | --- |
-| App does not open | Unblock the downloaded ZIP in file Properties, then extract and run again |
-| Missing runtime error | Rebuild using `.\package.ps1` in self-contained mode |
-| Startup says package is incomplete | Verify `patches\versions.json` and required `.sql` files are present |
+| App does not open | Run the installed `ME_ACS_SQL_Patcher-win-Setup.exe` again or reinstall from the latest release |
+| Missing runtime error | Rebuild using `.\build\release.ps1` or `.\build\package.ps1` in self-contained mode |
+| Startup says package is incomplete | Verify the bundled `app\patches\versions.json` exists in the published output |
 | SQL Server not found | Install SQL Server Express or LocalDB |
 | No upgrade path | Verify `versions.json` and patch definitions |
-| Version list looks wrong | Check the configured active patches folder |
+| Version list looks wrong | Check the managed active patch library under `%LOCALAPPDATA%\MagDbPatcher\patches` or the configured custom folder |
 
 ## Key Files
 
 | File | Responsibility |
 | --- | --- |
-| `MainWindow.xaml` | Main user interface |
-| `MainWindow.xaml.cs` | Main application interaction flow |
-| `Infrastructure/AppRuntimePaths.cs` | Portable app layout for settings, logs, patches, temp data, and backups |
-| `Services/PortableAppBootstrapService.cs` | Startup validation for package completeness and folder writability |
-| `Services/PatchStorageService.cs` | Active patch-folder resolution |
-| `Services/VersionService.cs` | Version graph and reachable upgrade path logic |
-| `Services/PatchPackService.cs` | Patch-pack validation, backup, and atomic swap |
-| `package.ps1` | Packaging and ZIP generation |
+| `src/ME_ACS_SQL_Patcher/MainWindow.xaml` | Main user interface |
+| `src/ME_ACS_SQL_Patcher/MainWindow.xaml.cs` | Main window composition and startup interactions |
+| `src/ME_ACS_SQL_Patcher/Infrastructure/AppRuntimePaths.cs` | Installed app layout for bundled content, LocalAppData user state, temp data, and backups |
+| `src/ME_ACS_SQL_Patcher/Services/PortableAppBootstrapService.cs` | Startup validation, LocalAppData workspace creation, and bundled-library verification |
+| `src/ME_ACS_SQL_Patcher/Services/PortableDataMigrationService.cs` | First-run import of legacy portable data into the managed app-data layout |
+| `src/ME_ACS_SQL_Patcher/Services/PatchStorageService.cs` | Active patch-folder resolution |
+| `src/ME_ACS_SQL_Patcher/Services/VersionService.cs` | Version graph and reachable upgrade path logic |
+| `src/ME_ACS_SQL_Patcher/Services/PatchPackService.cs` | Patch-pack validation, backup, and atomic swap |
+| `build/package.ps1` | Smoke-test publish and handoff ZIP generation |
+| `build/release.ps1` | Full release pipeline including Velopack installer artifacts |

@@ -2,6 +2,7 @@
 [Bb]in/
 [Oo]bj/
 .artifacts/
+artifacts/
 dist/
 output/
 publish/
@@ -24,6 +25,8 @@ backups/
 settings.json
 build.log
 *.log
+update-host/feed/*
+!update-host/feed/.gitkeep
 
 # OS files
 Thumbs.db
