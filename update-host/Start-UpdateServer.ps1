@@ -1,5 +1,5 @@
 param(
-    [int]$Port = 8080,
+    [int]$Port = 39000,
     [string]$FeedDirectory = ""
 )
 
@@ -22,12 +22,14 @@ if ([string]::IsNullOrWhiteSpace($localIP)) {
 }
 
 $listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add("http://+:$Port/")
+# Bind to specific IP + localhost — no Administrator required
+$listener.Prefixes.Add("http://${localIP}:${Port}/")
+$listener.Prefixes.Add("http://localhost:${Port}/")
 
 try {
     $listener.Start()
 } catch {
-    throw "Could not start HTTP server on port $Port. Try running as Administrator or use a different port: .\Start-UpdateServer.ps1 -Port 9090"
+    throw "Could not start HTTP server on port $Port. Error: $_"
 }
 
 Write-Host ""

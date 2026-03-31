@@ -337,11 +337,11 @@ public partial class MainWindow : Window
             var localIp = host.AddressList.FirstOrDefault(ip =>
                 ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork &&
                 !System.Net.IPAddress.IsLoopback(ip));
-            return localIp != null ? $"http://{localIp}:8080" : "http://localhost:8080";
+            return localIp != null ? $"http://{localIp}:39000" : "http://localhost:39000";
         }
         catch
         {
-            return "http://localhost:8080";
+            return "http://localhost:39000";
         }
     }
 
