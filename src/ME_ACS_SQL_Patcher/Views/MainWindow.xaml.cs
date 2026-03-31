@@ -326,7 +326,23 @@ public partial class MainWindow : Window
     private string GetStoredUpdateFeedPath()
     {
         var stored = (_settings.AppUpdateFeedPath ?? string.Empty).Trim();
-        return string.IsNullOrEmpty(stored) ? AppSettings.DefaultUpdateFeedUrl : stored;
+        return string.IsNullOrEmpty(stored) ? GetLocalFeedUrl() : stored;
+    }
+
+    private static string GetLocalFeedUrl()
+    {
+        try
+        {
+            var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
+            var localIp = host.AddressList.FirstOrDefault(ip =>
+                ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork &&
+                !System.Net.IPAddress.IsLoopback(ip));
+            return localIp != null ? $"http://{localIp}" : "http://localhost";
+        }
+        catch
+        {
+            return "http://localhost";
+        }
     }
 
     private async Task SetUpdateFeedPathAsync(string feedPath)

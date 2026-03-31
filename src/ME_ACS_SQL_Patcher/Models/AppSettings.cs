@@ -18,8 +18,6 @@ public class AppSettings
     public string? AppUpdateFeedPath { get; set; }
     public DateTime? LastUpdateCheckAt { get; set; }
 
-    public const string DefaultUpdateFeedUrl = "http://magetegra.servecounterstrike.com";
-
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public SqlAuthMode SqlAuthMode { get; set; } = SqlAuthMode.Windows;
 
