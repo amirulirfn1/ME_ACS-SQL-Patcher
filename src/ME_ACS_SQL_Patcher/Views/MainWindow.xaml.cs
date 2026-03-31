@@ -201,7 +201,10 @@ public partial class MainWindow : Window
             _viewModel.RecentBackupFiles.Add(item);
 
         if (_viewModel.RecentBackupFiles.Count > 0)
+        {
             cmbSourcePath.SelectedIndex = 0;
+            txtSourcePlaceholder.Visibility = Visibility.Collapsed;
+        }
 
         cmbSqlServer.Text = snapshot.LastSqlServer;
         txtSqlUsername.Text = snapshot.SqlUsername;
@@ -301,9 +304,15 @@ public partial class MainWindow : Window
 
     private async Task CheckForUpdatesOnStartupAsync()
     {
+        var feedPath = GetStoredUpdateFeedPath();
+        var reachable = await PingFeedServerAsync(feedPath);
+        Dispatcher.Invoke(() => SetServerHealthDot(reachable, feedPath));
+
+        if (!reachable)
+            return;
+
         try
         {
-            var feedPath = GetStoredUpdateFeedPath();
             var appUpdateService = new VelopackAppUpdateService();
             var result = await appUpdateService.CheckForUpdatesAsync(feedPath);
 
@@ -321,6 +330,31 @@ public partial class MainWindow : Window
         {
             // Silent — update check must never disrupt startup
         }
+    }
+
+    private static async Task<bool> PingFeedServerAsync(string feedUrl)
+    {
+        try
+        {
+            using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var response = await client.GetAsync(feedUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void SetServerHealthDot(bool reachable, string feedUrl)
+    {
+        ellipseServerHealth.Fill = reachable
+            ? (Brush)FindResource("Success")
+            : (Brush)FindResource("Error");
+        txtServerHealth.Text = reachable ? "Server OK" : "Server offline";
+        ellipseServerHealth.ToolTip = reachable
+            ? $"Update server reachable: {feedUrl}"
+            : $"Update server unreachable: {feedUrl}";
     }
 
     private string GetStoredUpdateFeedPath()
@@ -448,7 +482,8 @@ public partial class MainWindow : Window
             var totalScripts = steps.Sum(s => s.Scripts.Count);
             var segments = new List<string> { fromVersion };
             segments.AddRange(steps.Select(s => s.ToVersion));
-            _viewModel.UpgradePathText = $"{string.Join("  ->  ", segments)}    ({steps.Count} step{(steps.Count == 1 ? "" : "s")}, {totalScripts} script{(totalScripts == 1 ? "" : "s")})";
+            _viewModel.UpgradePathText = $"{string.Join("  →  ", segments)}" +
+                $"    ({steps.Count} step{(steps.Count == 1 ? "" : "s")}, {totalScripts} script{(totalScripts == 1 ? "" : "s")})";
             txtUpgradePath.Foreground = (Brush)FindResource("TextPrimary");
         }
         catch (Exception ex)
@@ -588,6 +623,11 @@ public partial class MainWindow : Window
         SetStepStatusChip(bdStep3Status, txtStep3Status, RunStateEvaluator.GetStepText(state.Step3State), state.Step3State);
         SetStepStatusChip(bdStep4Status, txtStep4Status, state.RunReady ? "Ready" : RunStateEvaluator.GetStepText(state.Step4State), state.Step4State);
 
+        SetStepCircle(bdStep1Circle, txtStep1Circle, state.Step1State);
+        SetStepCircle(bdStep2Circle, txtStep2Circle, state.Step2State);
+        SetStepCircle(bdStep3Circle, txtStep3Circle, state.Step3State);
+        SetStepCircle(bdStep4Circle, txtStep4Circle, state.Step4State);
+
         _viewModel.NextActionText = state.RunReady
             ? "Next: Review the run summary, then click Start Patch."
             : state.NextActionText;
@@ -624,6 +664,33 @@ public partial class MainWindow : Window
                 border.Background = (Brush)FindResource("SurfaceSubtle");
                 border.BorderBrush = (Brush)FindResource("BorderStrong");
                 textBlock.Foreground = (Brush)FindResource("TextMuted");
+                break;
+        }
+    }
+
+    private void SetStepCircle(Border circle, TextBlock label, RunStepState state)
+    {
+        switch (state)
+        {
+            case RunStepState.Done:
+                circle.Background = (Brush)FindResource("SuccessSoft");
+                circle.BorderBrush = (Brush)FindResource("Success");
+                label.Foreground = (Brush)FindResource("Success");
+                break;
+            case RunStepState.Ready:
+                circle.Background = (Brush)FindResource("InfoSoft");
+                circle.BorderBrush = (Brush)FindResource("Info");
+                label.Foreground = (Brush)FindResource("Info");
+                break;
+            case RunStepState.NeedsAttention:
+                circle.Background = (Brush)FindResource("WarningSoft");
+                circle.BorderBrush = (Brush)FindResource("Warning");
+                label.Foreground = (Brush)FindResource("Warning");
+                break;
+            default:
+                circle.Background = (Brush)FindResource("BgSecondary");
+                circle.BorderBrush = (Brush)FindResource("BorderStrong");
+                label.Foreground = (Brush)FindResource("TextMuted");
                 break;
         }
     }

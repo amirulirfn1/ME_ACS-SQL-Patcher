@@ -58,7 +58,17 @@ public partial class MainWindow
         if (_isLoadingUi)
             return;
 
+        if (sender == cmbSourcePath || e.OriginalSource is TextBox tb && tb.TemplatedParent == cmbSourcePath)
+            UpdateSourcePlaceholder();
+
         RefreshRunSummary();
+    }
+
+    private void UpdateSourcePlaceholder()
+    {
+        txtSourcePlaceholder.Visibility = string.IsNullOrEmpty(cmbSourcePath.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void AdvancedRunSettingTextChanged(object sender, TextChangedEventArgs e)
@@ -192,10 +202,29 @@ public partial class MainWindow
             var line = _pendingLogLines.Dequeue();
             EnqueueWithCap(_retainedLogLines, line, MaxRetainedLogLines);
             EnqueueWithCap(_visibleLogLines, line, MaxVisibleLogLines);
+
+            var entry = new ViewModels.LogEntry(line, DetectLogSeverity(line));
+            _viewModel.LogEntries.Add(entry);
+            while (_viewModel.LogEntries.Count > MaxVisibleLogLines)
+                _viewModel.LogEntries.RemoveAt(0);
         }
 
-        _viewModel.LogText = string.Join(Environment.NewLine, _visibleLogLines);
-        txtLog.ScrollToEnd();
+        txtLogEmpty.Visibility = Visibility.Collapsed;
+        logScrollViewer.ScrollToBottom();
+    }
+
+    private static ViewModels.LogSeverity DetectLogSeverity(string line)
+    {
+        // Lines are stamped "[HH:mm:ss] ..." — skip the 11-char timestamp prefix
+        var content = line.Length > 11 ? line.AsSpan(11).TrimStart() : line.AsSpan();
+        if (content.StartsWith("[ERROR]", StringComparison.OrdinalIgnoreCase) ||
+            content.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase))
+            return ViewModels.LogSeverity.Error;
+        if (content.StartsWith("[WARN]", StringComparison.OrdinalIgnoreCase) ||
+            content.StartsWith("[WARNING]", StringComparison.OrdinalIgnoreCase) ||
+            content.StartsWith("WARN:", StringComparison.OrdinalIgnoreCase))
+            return ViewModels.LogSeverity.Warning;
+        return ViewModels.LogSeverity.Info;
     }
 
     private static void EnqueueWithCap(Queue<string> queue, string line, int maxCount)
@@ -212,7 +241,8 @@ public partial class MainWindow
         _pendingLogLines.Clear();
         _visibleLogLines.Clear();
         _retainedLogLines.Clear();
-        _viewModel.LogText = string.Empty;
+        _viewModel.LogEntries.Clear();
+        txtLogEmpty.Visibility = Visibility.Visible;
     }
 
     private void ApplyRunUiLock(bool isRunning)

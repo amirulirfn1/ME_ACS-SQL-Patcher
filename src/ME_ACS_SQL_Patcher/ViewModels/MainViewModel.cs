@@ -45,6 +45,7 @@ public sealed class MainViewModel : BindableBase
     public ObservableCollection<VersionInfo> TargetVersions { get; } = new();
     public ObservableCollection<ValidationIssue> ValidationIssues { get; } = new();
     public ObservableCollection<DiagnosticWarningItem> RunWarnings { get; } = new();
+    public ObservableCollection<LogEntry> LogEntries { get; } = new();
 
     public int WarningCount
     {
