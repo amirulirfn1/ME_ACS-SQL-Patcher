@@ -16,6 +16,9 @@ public class AppSettings
     public List<string> RecentBackupFiles { get; set; } = new();
     public string? LastImportedPatchPack { get; set; }
     public string? AppUpdateFeedPath { get; set; }
+    public DateTime? LastUpdateCheckAt { get; set; }
+
+    public const string DefaultUpdateFeedUrl = "http://magetegra.servecounterstrike.com";
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public SqlAuthMode SqlAuthMode { get; set; } = SqlAuthMode.Windows;

@@ -593,6 +593,35 @@ public partial class AdminWindow : Window
         ShowAppUpdateBanner(NotificationLevel.Info, "App update feed path cleared.");
     }
 
+    private async void BtnTestUpdateServer_Click(object sender, RoutedEventArgs e)
+    {
+        var url = txtUpdateFeedPath.Text.Trim();
+        if (string.IsNullOrEmpty(url))
+        {
+            ShowAppUpdateBanner(NotificationLevel.Error, "No update server URL is set.");
+            return;
+        }
+
+        btnTestUpdateServer.IsEnabled = false;
+        try
+        {
+            using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var response = await http.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+                ShowAppUpdateBanner(NotificationLevel.Success, $"Update server is reachable. ({(int)response.StatusCode} {response.ReasonPhrase})");
+            else
+                ShowAppUpdateBanner(NotificationLevel.Error, $"Server responded with an error: {(int)response.StatusCode} {response.ReasonPhrase}");
+        }
+        catch (Exception ex)
+        {
+            ShowAppUpdateBanner(NotificationLevel.Error, $"Cannot reach update server: {ex.Message}");
+        }
+        finally
+        {
+            btnTestUpdateServer.IsEnabled = true;
+        }
+    }
+
     private async void BtnCheckAppUpdates_Click(object sender, RoutedEventArgs e)
     {
         btnCheckAppUpdates.IsEnabled = false;
@@ -625,6 +654,9 @@ public partial class AdminWindow : Window
         finally
         {
             btnCheckAppUpdates.IsEnabled = true;
+            if (_setLastUpdateCheckAt != null)
+                await _setLastUpdateCheckAt(DateTime.Now);
+            RefreshLastCheckedLabel();
         }
     }
 

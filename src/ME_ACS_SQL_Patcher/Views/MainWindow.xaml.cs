@@ -118,6 +118,7 @@ public partial class MainWindow : Window
             await PersistSettingsAsync();
             FocusPrimaryInput();
             _viewModel.StatusText = "Ready";
+            _ = CheckForUpdatesOnStartupAsync();
         }
         catch (Exception ex)
         {
@@ -298,8 +299,35 @@ public partial class MainWindow : Window
         txtLastImportedPack.Text = $"{mode}: {currentFolder}{Environment.NewLine}{importText}";
     }
 
+    private async Task CheckForUpdatesOnStartupAsync()
+    {
+        try
+        {
+            var feedPath = GetStoredUpdateFeedPath();
+            var appUpdateService = new VelopackAppUpdateService();
+            var result = await appUpdateService.CheckForUpdatesAsync(feedPath);
+
+            _settings.LastUpdateCheckAt = DateTime.Now;
+            await _settingsService.SaveAsync(_settings);
+
+            if (result.IsUpdateAvailable)
+            {
+                Dispatcher.Invoke(() =>
+                    SetBanner(NotificationLevel.Info,
+                        $"Version {result.Asset?.Version} is available. Open Admin Tools → App Update to apply it."));
+            }
+        }
+        catch
+        {
+            // Silent — update check must never disrupt startup
+        }
+    }
+
     private string GetStoredUpdateFeedPath()
-        => (_settings.AppUpdateFeedPath ?? string.Empty).Trim();
+    {
+        var stored = (_settings.AppUpdateFeedPath ?? string.Empty).Trim();
+        return string.IsNullOrEmpty(stored) ? AppSettings.DefaultUpdateFeedUrl : stored;
+    }
 
     private async Task SetUpdateFeedPathAsync(string feedPath)
     {

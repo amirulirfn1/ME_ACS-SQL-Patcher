@@ -51,7 +51,13 @@ public partial class MainWindow
             persistSettingsAsync: PersistSettingsAsync,
             getCurrentUpdateFeedPath: GetStoredUpdateFeedPath,
             setUpdateFeedPathAsync: SetUpdateFeedPathAsync,
-            getVersionService: () => _versionService)
+            getVersionService: () => _versionService,
+            getLastUpdateCheckAt: () => _settings.LastUpdateCheckAt,
+            setLastUpdateCheckAt: async dt =>
+            {
+                _settings.LastUpdateCheckAt = dt;
+                await _settingsService.SaveAsync(_settings);
+            })
         {
             Owner = this
         };

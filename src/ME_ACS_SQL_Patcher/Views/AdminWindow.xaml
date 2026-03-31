@@ -58,10 +58,15 @@
                         <Button x:Name="btnResetUpdateFeedPath" Content="Clear"
                                 Style="{StaticResource BtnSecondary}" Margin="0,0,6,0" MinWidth="60"
                                 Click="BtnResetUpdateFeedPath_Click"/>
+                        <Button x:Name="btnTestUpdateServer" Content="Test Server"
+                                Style="{StaticResource BtnSecondary}" Margin="0,0,6,0" MinWidth="90"
+                                Click="BtnTestUpdateServer_Click"/>
                         <Button x:Name="btnCheckAppUpdates" Content="Check for Updates"
                                 Style="{StaticResource BtnPrimary}" MinWidth="130"
                                 Click="BtnCheckAppUpdates_Click"/>
                     </StackPanel>
+                    <TextBlock x:Name="txtLastUpdateCheck" FontSize="11"
+                               Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
                     <Border x:Name="bdAppUpdateStatus" Style="{StaticResource StatusBannerInfo}" Visibility="Collapsed">
                         <TextBlock x:Name="txtAppUpdateStatusMsg" FontSize="12" TextWrapping="Wrap"/>
                     </Border>

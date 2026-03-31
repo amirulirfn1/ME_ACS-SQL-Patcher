@@ -46,7 +46,8 @@ public sealed class SettingsBinder
             AppUpdateFeedPath = string.IsNullOrWhiteSpace(input.AppUpdateFeedPath) ? null : input.AppUpdateFeedPath.Trim(),
             SqlAuthMode = input.SqlAuthMode,
             SqlUsername = input.SqlAuthMode == SqlAuthMode.SqlLogin ? input.SqlUsername : null,
-            IsDarkTheme = input.Existing.IsDarkTheme
+            IsDarkTheme = input.Existing.IsDarkTheme,
+            LastUpdateCheckAt = input.Existing.LastUpdateCheckAt
         };
     }
 }

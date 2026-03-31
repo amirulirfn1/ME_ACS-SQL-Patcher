@@ -25,6 +25,8 @@ public partial class AdminWindow : Window
     private readonly Func<string>? _getCurrentUpdateFeedPath;
     private readonly Func<string, Task>? _setUpdateFeedPathAsync;
     private readonly Func<IVersionService?>? _getVersionService;
+    private readonly Func<DateTime?>? _getLastUpdateCheckAt;
+    private readonly Func<DateTime, Task>? _setLastUpdateCheckAt;
 
     private readonly IAdminCatalogOrchestrator _catalogOrchestrator;
     private readonly IAppUpdateService _appUpdateService = new VelopackAppUpdateService();
@@ -61,7 +63,9 @@ public partial class AdminWindow : Window
         Func<string>? getCurrentUpdateFeedPath = null,
         Func<string, Task>? setUpdateFeedPathAsync = null,
         Func<IVersionService?>? getVersionService = null,
-        IAdminCatalogOrchestrator? catalogOrchestrator = null)
+        IAdminCatalogOrchestrator? catalogOrchestrator = null,
+        Func<DateTime?>? getLastUpdateCheckAt = null,
+        Func<DateTime, Task>? setLastUpdateCheckAt = null)
     {
         _versionService = versionService;
         _onDataChanged = onDataChanged;
@@ -72,6 +76,8 @@ public partial class AdminWindow : Window
         _getCurrentUpdateFeedPath = getCurrentUpdateFeedPath;
         _setUpdateFeedPathAsync = setUpdateFeedPathAsync;
         _getVersionService = getVersionService;
+        _getLastUpdateCheckAt = getLastUpdateCheckAt;
+        _setLastUpdateCheckAt = setLastUpdateCheckAt;
         _catalogOrchestrator = catalogOrchestrator ?? new AdminCatalogOrchestrator();
 
         InitializeComponent();
@@ -94,8 +100,17 @@ public partial class AdminWindow : Window
     {
         txtActivePatchesFolder.Text = _getCurrentPatchesFolder();
         txtUpdateFeedPath.Text = _getCurrentUpdateFeedPath?.Invoke() ?? string.Empty;
+        RefreshLastCheckedLabel();
         await RefreshAdminDataAsync();
         await ScanCatalogAsync();
+    }
+
+    private void RefreshLastCheckedLabel()
+    {
+        var last = _getLastUpdateCheckAt?.Invoke();
+        txtLastUpdateCheck.Text = last.HasValue
+            ? $"Last checked: {last.Value:dd MMM yyyy, h:mm tt}"
+            : "Last checked: Never";
     }
 
     private async void AdminWindow_Closing(object? sender, CancelEventArgs e)

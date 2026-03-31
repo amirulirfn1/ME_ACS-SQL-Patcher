@@ -12,10 +12,10 @@
     <Title>ME_ACS SQL Patcher</Title>
     <Description>Portable support tool for patching MagEtegra database backups.</Description>
     <FileDescription>ME_ACS SQL Patcher portable support tool</FileDescription>
-    <Version>1.3.0</Version>
-    <FileVersion>1.3.0.0</FileVersion>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
-    <InformationalVersion>1.3.0</InformationalVersion>
+    <Version>7.2.4</Version>
+    <FileVersion>7.2.4.0</FileVersion>
+    <AssemblyVersion>7.2.4.0</AssemblyVersion>
+    <InformationalVersion>7.2.4</InformationalVersion>
     <Product>ME_ACS SQL Patcher</Product>
     <Company>Magnet Security</Company>
     <ApplicationIcon>Assets\me-acs-patcher.ico</ApplicationIcon>
