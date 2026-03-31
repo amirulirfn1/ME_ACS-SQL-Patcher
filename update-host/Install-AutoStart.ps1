@@ -1,79 +1,61 @@
-#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Registers the ME ACS SQL Patcher update server as a Windows Task Scheduler task.
-    Runs automatically at system boot on port 80, no login required.
+    Registers the ME ACS SQL Patcher update server to auto-start on login.
+    Uses port 8080 (no Administrator required).
 
 .USAGE
-    Right-click Install-AutoStart.ps1 -> Run as Administrator
-    To remove: schtasks /delete /tn "MagEtegra Update Server" /f
+    Double-click or right-click -> Run with PowerShell
+    To remove: Delete the shortcut from shell:startup
 #>
 
 $TaskName   = "MagEtegra Update Server"
 $ScriptPath = Join-Path $PSScriptRoot "Start-UpdateServer.ps1"
 $FeedPath   = Join-Path $PSScriptRoot "feed"
-$LogPath    = Join-Path $PSScriptRoot "server.log"
+$StartupDir = [Environment]::GetFolderPath("Startup")
+$ShortcutPath = Join-Path $StartupDir "$TaskName.lnk"
 
 if (-not (Test-Path $ScriptPath)) {
     Write-Error "Start-UpdateServer.ps1 not found at: $ScriptPath"
+    pause
     exit 1
 }
 
 if (-not (Test-Path $FeedPath)) {
     Write-Error "Feed folder not found at: $FeedPath. Build a release first."
+    pause
     exit 1
 }
 
-# Remove existing task if present
-$existing = schtasks /query /tn $TaskName 2>$null
-if ($existing) {
-    Write-Host "Removing existing task..."
-    schtasks /delete /tn $TaskName /f | Out-Null
-}
-
-$argument = "-NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass " +
-            "-File `"$ScriptPath`" -Port 80 -FeedDirectory `"$FeedPath`" " +
-            "*>> `"$LogPath`""
-
-$action = New-ScheduledTaskAction `
-    -Execute "powershell.exe" `
-    -Argument $argument
-
-$trigger = New-ScheduledTaskTrigger -AtStartup
-
-$settings = New-ScheduledTaskSettingsSet `
-    -ExecutionTimeLimit (New-TimeSpan -Hours 0) `
-    -RestartCount 3 `
-    -RestartInterval (New-TimeSpan -Minutes 1) `
-    -StartWhenAvailable
-
-$principal = New-ScheduledTaskPrincipal `
-    -UserId "SYSTEM" `
-    -LogonType ServiceAccount `
-    -RunLevel Highest
-
-Register-ScheduledTask `
-    -TaskName $TaskName `
-    -Action $action `
-    -Trigger $trigger `
-    -Settings $settings `
-    -Principal $principal `
-    -Description "Serves the MagEtegra update feed on port 80 for Velopack auto-updates." | Out-Null
+# Create shortcut in Windows startup folder (runs on every login, no admin needed)
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+$Shortcut.TargetPath = "powershell.exe"
+$Shortcut.Arguments  = "-NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$ScriptPath`" -Port 8080 -FeedDirectory `"$FeedPath`""
+$Shortcut.WorkingDirectory = $PSScriptRoot
+$Shortcut.Description = "MagEtegra update feed server"
+$Shortcut.Save()
 
 Write-Host ""
-Write-Host "Task registered: '$TaskName'"
-Write-Host "Runs as: SYSTEM (no login needed, survives reboots)"
-Write-Host "Port: 80"
+Write-Host "Auto-start registered in: $ShortcutPath"
+Write-Host "Port: 8080"
 Write-Host "Feed: $FeedPath"
-Write-Host "Log: $LogPath"
 Write-Host ""
-Write-Host "Starting now..."
-Start-ScheduledTask -TaskName $TaskName
+
+# Start it now too
+Write-Host "Starting server now..."
+Start-Process "powershell.exe" -ArgumentList "-NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$ScriptPath`" -Port 8080 -FeedDirectory `"$FeedPath`""
 Start-Sleep -Seconds 2
 
-$state = (Get-ScheduledTask -TaskName $TaskName).State
-Write-Host "Task state: $state"
+Write-Host "Done. Server is running on port 8080."
+Write-Host "Update feed URL for other PCs:"
+
+$localIP = (Get-NetIPAddress -AddressFamily IPv4 |
+    Where-Object { $_.InterfaceAlias -notlike "*Loopback*" -and $_.IPAddress -notlike "169.*" } |
+    Select-Object -First 1).IPAddress
+
 Write-Host ""
-Write-Host "Done. The server will start automatically on every boot."
-Write-Host "To stop: schtasks /end /tn `"$TaskName`""
-Write-Host "To remove: schtasks /delete /tn `"$TaskName`" /f"
+Write-Host "  http://${localIP}:8080"
+Write-Host ""
+Write-Host "Set this URL in Admin Tools -> App Update Feed on all PCs."
+Write-Host ""
+pause
