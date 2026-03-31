@@ -641,11 +641,11 @@ public partial class AdminWindow : Window
                 var shouldApply = _dialogs.Confirm(result.Message, "Apply App Update", useYesNo: true);
                 if (shouldApply)
                 {
-                    await _appUpdateService.ApplyPendingUpdateAndRestartAsync(feedPath, result.Asset);
+                    await _appUpdateService.ApplyPendingUpdateAndRestartAsync(result.InstallerUrl!);
                     return;
                 }
 
-                ShowAppUpdateBanner(NotificationLevel.Info, "Update downloaded and ready — apply it when convenient.");
+                ShowAppUpdateBanner(NotificationLevel.Info, "Update is available — apply it when convenient.");
                 return;
             }
 
@@ -653,10 +653,8 @@ public partial class AdminWindow : Window
             {
                 AppUpdateStatus.NotConfigured =>
                     (NotificationLevel.Error, "No update server URL is set. Enter a URL above and try again."),
-                AppUpdateStatus.NotInstalled =>
-                    (NotificationLevel.Error, "Update checks require the installed build. This is a dev/portable copy — updates must be applied manually."),
                 AppUpdateStatus.NoUpdateAvailable =>
-                    (NotificationLevel.Success, $"Server reached. App is up to date (v{AppMetadata.DisplayVersion} is the latest)."),
+                    (NotificationLevel.Success, result.Message),
                 _ =>
                     (NotificationLevel.Info, result.Message)
             };

@@ -313,7 +313,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var appUpdateService = new VelopackAppUpdateService();
+            var appUpdateService = new BuildDateUpdateService();
             var result = await appUpdateService.CheckForUpdatesAsync(feedPath);
 
             _settings.LastUpdateCheckAt = DateTime.Now;
@@ -323,7 +323,7 @@ public partial class MainWindow : Window
             {
                 Dispatcher.Invoke(() =>
                     SetBanner(NotificationLevel.Info,
-                        $"Version {result.Asset?.Version} is available. Open Admin Tools → App Update to apply it."));
+                        "A newer build is available. Open Admin Tools → App Update to apply it."));
             }
         }
         catch
@@ -337,7 +337,8 @@ public partial class MainWindow : Window
         try
         {
             using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            var response = await client.GetAsync(feedUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+            var latestJsonUrl = $"{feedUrl.TrimEnd('/')}/latest.json";
+            var response = await client.GetAsync(latestJsonUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
             return response.IsSuccessStatusCode;
         }
         catch

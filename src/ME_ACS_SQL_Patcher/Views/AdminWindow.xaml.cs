@@ -29,7 +29,7 @@ public partial class AdminWindow : Window
     private readonly Func<DateTime, Task>? _setLastUpdateCheckAt;
 
     private readonly IAdminCatalogOrchestrator _catalogOrchestrator;
-    private readonly IAppUpdateService _appUpdateService = new VelopackAppUpdateService();
+    private readonly IAppUpdateService _appUpdateService = new BuildDateUpdateService();
     private readonly AdminUiStateController _uiStateController = new();
     private readonly AdminVersionChainFormatter _versionChainFormatter = new();
     private readonly IUserDialogService _dialogs = new UserDialogService();

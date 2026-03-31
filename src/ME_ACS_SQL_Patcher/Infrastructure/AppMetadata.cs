@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 
 namespace MagDbPatcher.Infrastructure;
@@ -28,4 +29,17 @@ public static class AppMetadata
     }
 
     public static string BuildLabel => $"Build {DisplayVersion}";
+
+    public static DateTime BuildDate
+    {
+        get
+        {
+            var raw = EntryAssembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(a => a.Key == "BuildDate")?.Value;
+            return DateTime.TryParse(raw, null, DateTimeStyles.RoundtripKind, out var dt)
+                ? dt
+                : DateTime.MinValue;
+        }
+    }
 }
