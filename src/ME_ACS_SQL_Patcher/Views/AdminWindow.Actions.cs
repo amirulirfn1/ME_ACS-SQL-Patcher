@@ -608,13 +608,17 @@ public partial class AdminWindow : Window
             using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var response = await http.GetAsync(url);
             if (response.IsSuccessStatusCode)
-                ShowAppUpdateBanner(NotificationLevel.Success, $"Update server is reachable. ({(int)response.StatusCode} {response.ReasonPhrase})");
+                ShowAppUpdateBanner(NotificationLevel.Success, $"Server reachable at {url}  —  ready to serve updates.");
             else
-                ShowAppUpdateBanner(NotificationLevel.Error, $"Server responded with an error: {(int)response.StatusCode} {response.ReasonPhrase}");
+                ShowAppUpdateBanner(NotificationLevel.Error, $"Server at {url} returned {(int)response.StatusCode} {response.ReasonPhrase}. Check that the feed folder exists.");
+        }
+        catch (TaskCanceledException)
+        {
+            ShowAppUpdateBanner(NotificationLevel.Error, $"Timed out connecting to {url}. Is the server running? Check that Install-AutoStart.ps1 was run as Administrator.");
         }
         catch (Exception ex)
         {
-            ShowAppUpdateBanner(NotificationLevel.Error, $"Cannot reach update server: {ex.Message}");
+            ShowAppUpdateBanner(NotificationLevel.Error, $"Cannot reach {url}  —  {ex.Message}. Make sure the update server is running on the host PC.");
         }
         finally
         {
@@ -641,15 +645,26 @@ public partial class AdminWindow : Window
                     return;
                 }
 
-                ShowAppUpdateBanner(NotificationLevel.Info, "App update was downloaded and will remain pending until you apply it.");
+                ShowAppUpdateBanner(NotificationLevel.Info, "Update downloaded and ready — apply it when convenient.");
                 return;
             }
 
-            ShowAppUpdateBanner(NotificationLevel.Info, result.Message);
+            (NotificationLevel level, string message) = result.Status switch
+            {
+                AppUpdateStatus.NotConfigured =>
+                    (NotificationLevel.Error, "No update server URL is set. Enter a URL above and try again."),
+                AppUpdateStatus.NotInstalled =>
+                    (NotificationLevel.Error, "Update checks require the installed build. This is a dev/portable copy — updates must be applied manually."),
+                AppUpdateStatus.NoUpdateAvailable =>
+                    (NotificationLevel.Success, $"Server reached. App is up to date (v{AppMetadata.DisplayVersion} is the latest)."),
+                _ =>
+                    (NotificationLevel.Info, result.Message)
+            };
+            ShowAppUpdateBanner(level, message);
         }
         catch (Exception ex)
         {
-            ShowAppUpdateBanner(NotificationLevel.Error, $"Update check failed: {ex.Message}");
+            ShowAppUpdateBanner(NotificationLevel.Error, $"Update check failed: {ex.Message}  —  Is the server URL correct? Try the Test Server button.");
         }
         finally
         {
