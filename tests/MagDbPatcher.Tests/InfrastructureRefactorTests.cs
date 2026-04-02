@@ -69,4 +69,21 @@ public class InfrastructureRefactorTests
 
         Assert.Equal(paths.TempFolder, result.PatchTempFolder);
     }
+
+    [Fact]
+    public void SettingsBinder_BuildPersistedSettings_ExtractsImportedPackLabelFromSummaryText()
+    {
+        var binder = new SettingsBinder();
+
+        var result = binder.BuildPersistedSettings(new SettingsPersistInput
+        {
+            Existing = new AppSettings(),
+            PatchesFolder = @"C:\patches",
+            LastSqlServer = @".\MAGSQL",
+            LastImportedPatchPack = "Managed patch library: C:\\patches\r\nLast imported pack: 20260213 (2026-02-13).",
+            SqlAuthMode = SqlAuthMode.Windows
+        });
+
+        Assert.Equal("20260213 (2026-02-13)", result.LastImportedPatchPack);
+    }
 }

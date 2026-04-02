@@ -56,8 +56,8 @@ public class PatchPackService
             var extractedPatchesFolder = Path.Combine(tempRoot, manifest.ContentRoot);
             await ValidateExtractedPatchesAsync(extractedPatchesFolder);
 
-            var backup = AtomicSwap(targetPatchesFolder, extractedPatchesFolder, _backupRootDirectory);
             var archivedPack = ArchiveImportedPack(zipPath, manifest);
+            var backup = AtomicSwap(targetPatchesFolder, extractedPatchesFolder, _backupRootDirectory);
             return new ImportResult(manifest, backup, archivedPack);
         }
         finally

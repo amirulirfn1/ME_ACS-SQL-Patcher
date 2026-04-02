@@ -31,7 +31,7 @@ public sealed class PortableAppBootstrapService
         }
 
         progress?.Report("Checking writable app-data folders...");
-        EnsureWritable(_appPaths.SettingsFilePath);
+        EnsureDirectoryWritable(Path.GetDirectoryName(_appPaths.SettingsFilePath) ?? _appPaths.UserDataDirectory);
         EnsureWritable(Path.Combine(_appPaths.LogsDirectory, ".write-test"));
         EnsureWritable(Path.Combine(_appPaths.ImportedPacksDirectory, ".write-test"));
 
@@ -77,5 +77,13 @@ public sealed class PortableAppBootstrapService
 
         File.WriteAllText(probePath, "ok");
         File.Delete(probePath);
+    }
+
+    private static void EnsureDirectoryWritable(string directoryPath)
+    {
+        if (string.IsNullOrWhiteSpace(directoryPath))
+            throw new ArgumentException("Directory path is required.", nameof(directoryPath));
+
+        EnsureWritable(Path.Combine(directoryPath, ".write-test"));
     }
 }

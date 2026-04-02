@@ -52,6 +52,7 @@ public partial class AdminWindow : Window
     private bool _isPatchFormDirty;
     private bool _handlingTabSwitch;
     private int _previousTabIndex;
+    private PatchCatalogDescriptor? _activePatchCatalog;
 
     public AdminWindow(
         IVersionService versionService,
@@ -82,7 +83,7 @@ public partial class AdminWindow : Window
 
         InitializeComponent();
         Title = $"Admin Tools - {AppMetadata.DisplayVersion}";
-        txtBuildVersion.Text = AppMetadata.BuildLabel;
+        txtBuildVersion.Text = BuildHeaderVersionText();
 
         lstVersions.ItemsSource = _versions;
         lstPatches.ItemsSource = _patches;
@@ -174,11 +175,27 @@ public partial class AdminWindow : Window
             RefreshPatchScripts();
             UpdateButtonsState();
             RebuildChainVisualization();
+            RefreshPatchCatalogStatus();
         }
         finally
         {
             _isRefreshing = false;
         }
+    }
+
+    private void RefreshPatchCatalogStatus()
+    {
+        _activePatchCatalog = PatchCatalogDescriptorBuilder.FromVersionService(_versionService);
+        txtBuildVersion.Text = BuildHeaderVersionText();
+        txtFolderStatus.Text = $"Active catalog: {_activePatchCatalog.Label}";
+    }
+
+    private static string BuildHeaderVersionText()
+    {
+        if (string.IsNullOrWhiteSpace(AppMetadata.InstalledPatchCatalogLabel))
+            return AppMetadata.BuildLabel;
+
+        return $"{AppMetadata.BuildLabel}{Environment.NewLine}Bundled {AppMetadata.InstalledPatchCatalogLabel}";
     }
 
     private void RebuildChainVisualization()

@@ -23,9 +23,6 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal">
@@ -41,72 +38,83 @@
                                Stretch="Uniform"
                                SnapsToDevicePixels="True"/>
                     </Border>
-                    <StackPanel>
-                        <TextBlock Text="ME ACS SQL Patcher" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
-                        <TextBlock Text="Restore and patch MagEtegra database backups." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="ME ACS SQL Patcher"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="Restore and patch MagEtegra database backups."
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="0,6,0,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <WrapPanel Margin="0,8,0,0"
+                                   ItemHeight="18">
+                            <TextBlock x:Name="txtBuildVersion"
+                                       Text="{Binding AppBuildText}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,14,0"/>
+                            <TextBlock x:Name="txtVersion"
+                                       Text="{Binding PatchVersionText}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,14,0"/>
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <Ellipse x:Name="ellipseServerHealth"
+                                         Width="7" Height="7"
+                                         Fill="{DynamicResource TextMuted}"
+                                         VerticalAlignment="Center"
+                                         Margin="0,0,5,0"
+                                         ToolTip="Update server: not yet checked"/>
+                                <TextBlock x:Name="txtServerHealth"
+                                           Text="Update server"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </WrapPanel>
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1"
-                            VerticalAlignment="Top"
-                            Margin="0,4,16,0">
-                    <TextBlock x:Name="txtBuildVersion"
-                               Text="{Binding AppBuildText}"
-                               FontSize="12"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Right"
-                               Foreground="{DynamicResource TextMuted}"/>
-                    <TextBlock x:Name="txtVersion"
-                               Text="{Binding PatchVersionText}"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Right"
-                               Foreground="{DynamicResource TextMuted}"
-                               Margin="0,4,0,0"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
-                        <Ellipse x:Name="ellipseServerHealth"
-                                 Width="7" Height="7"
-                                 Fill="{DynamicResource TextMuted}"
-                                 VerticalAlignment="Center"
-                                 Margin="0,0,5,0"
-                                 ToolTip="Update server: not yet checked"/>
-                        <TextBlock x:Name="txtServerHealth"
-                                   Text="Update server"
-                                   FontSize="10"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </StackPanel>
+                <WrapPanel Grid.Column="1"
+                           VerticalAlignment="Top"
+                           Margin="16,0,0,0"
+                           HorizontalAlignment="Right"
+                           ItemHeight="40">
+                    <Button x:Name="btnImportPatchPack"
+                            Content="Import Patches"
+                            AutomationProperties.Name="Import patch pack zip"
+                            Style="{StaticResource BtnSecondary}"
+                            MinWidth="130"
+                            Padding="14,11"
+                            Margin="0,0,8,8"
+                            Click="BtnImportPatchPack_Click"/>
 
-                <Button x:Name="btnImportPatchPack"
-                        Grid.Column="2"
-                        Content="Import Patches"
-                        AutomationProperties.Name="Import patch pack zip"
-                        Style="{StaticResource BtnSecondary}"
-                        MinWidth="130"
-                        Padding="14,11"
-                        Margin="0,0,8,0"
-                        Click="BtnImportPatchPack_Click"/>
+                    <Button x:Name="btnToggleTheme"
+                            x:FieldModifier="private"
+                            Content="Dark Mode"
+                            AutomationProperties.Name="Toggle color theme"
+                            Style="{StaticResource BtnSecondary}"
+                            MinWidth="90"
+                            Padding="10,11"
+                            Margin="0,0,8,8"
+                            Click="BtnToggleTheme_Click"/>
 
-                <Button x:Name="btnToggleTheme"
-                        Grid.Column="3"
-                        x:FieldModifier="private"
-                        Content="Dark Mode"
-                        AutomationProperties.Name="Toggle color theme"
-                        Style="{StaticResource BtnSecondary}"
-                        MinWidth="90"
-                        Padding="10,11"
-                        Margin="0,0,8,0"
-                        Click="BtnToggleTheme_Click"/>
-
-                <Button x:Name="btnAdminTools"
-                        Grid.Column="4"
-                        Content="Admin"
-                        AutomationProperties.Name="Open admin tools"
-                        Style="{StaticResource BtnSecondary}"
-                        MinWidth="70"
-                        Padding="10,11"
-                        Click="BtnAdminTools_Click"/>
+                    <Button x:Name="btnAdminTools"
+                            Content="Admin"
+                            AutomationProperties.Name="Open admin tools"
+                            Style="{StaticResource BtnSecondary}"
+                            MinWidth="70"
+                            Padding="10,11"
+                            Margin="0,0,0,8"
+                            Click="BtnAdminTools_Click"/>
+                </WrapPanel>
             </Grid>
         </Border>
 
@@ -134,7 +142,7 @@
                                        Foreground="{DynamicResource TextMuted}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Select" FontSize="10" Foreground="{DynamicResource TextMuted}"
+                        <TextBlock x:Name="txtStep1Label" Text="Select" FontSize="10" Foreground="{DynamicResource TextMuted}"
                                    HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Center">
@@ -146,7 +154,7 @@
                                        Foreground="{DynamicResource TextMuted}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Versions" FontSize="10" Foreground="{DynamicResource TextMuted}"
+                        <TextBlock x:Name="txtStep2Label" Text="Versions" FontSize="10" Foreground="{DynamicResource TextMuted}"
                                    HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Center">
@@ -158,7 +166,7 @@
                                        Foreground="{DynamicResource TextMuted}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Connect" FontSize="10" Foreground="{DynamicResource TextMuted}"
+                        <TextBlock x:Name="txtStep3Label" Text="Connect" FontSize="10" Foreground="{DynamicResource TextMuted}"
                                    HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Center">
@@ -170,7 +178,7 @@
                                        Foreground="{DynamicResource TextMuted}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Run" FontSize="10" Foreground="{DynamicResource TextMuted}"
+                        <TextBlock x:Name="txtStep4Label" Text="Run" FontSize="10" Foreground="{DynamicResource TextMuted}"
                                    HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
                 </UniformGrid>

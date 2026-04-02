@@ -220,7 +220,10 @@ public partial class AdminWindow : Window
         txtCatalogStatusMsg.Text = $"{summary} {validationMsg}";
         ShowBannerAnimated(bdCatalogStatus);
 
-        txtFolderStatus.Text = $"Contains {snapshot.Versions.Count} version(s), {snapshot.AvailableScripts.Count} script(s)";
+        var activeCatalogText = _activePatchCatalog == null
+            ? "Active catalog unknown"
+            : $"Active catalog: {_activePatchCatalog.Label}";
+        txtFolderStatus.Text = $"{activeCatalogText} | {snapshot.AvailableScripts.Count} script(s)";
 
         _libraryScripts.Clear();
         if (_libraryVersions.Count > 0)
@@ -605,12 +608,24 @@ public partial class AdminWindow : Window
         btnTestUpdateServer.IsEnabled = false;
         try
         {
-            using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            var response = await http.GetAsync(url);
-            if (response.IsSuccessStatusCode)
-                ShowAppUpdateBanner(NotificationLevel.Success, $"Server reachable at {url}  —  ready to serve updates.");
+            if (AppUpdateFeedResolver.TryGetLocalDirectory(url, out var localDirectory))
+            {
+                var latestJsonPath = Path.Combine(localDirectory, "latest.json");
+                if (File.Exists(latestJsonPath))
+                    ShowAppUpdateBanner(NotificationLevel.Success, $"Update feed found at {localDirectory}.");
+                else
+                    ShowAppUpdateBanner(NotificationLevel.Error, $"Could not find latest.json in {localDirectory}.");
+            }
             else
-                ShowAppUpdateBanner(NotificationLevel.Error, $"Server at {url} returned {(int)response.StatusCode} {response.ReasonPhrase}. Check that the feed folder exists.");
+            {
+                using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+                var latestUrl = AppUpdateFeedResolver.BuildLatestJsonUrl(url);
+                var response = await http.GetAsync(latestUrl);
+                if (response.IsSuccessStatusCode)
+                    ShowAppUpdateBanner(NotificationLevel.Success, $"Update feed reachable at {latestUrl}.");
+                else
+                    ShowAppUpdateBanner(NotificationLevel.Error, $"Update feed at {latestUrl} returned {(int)response.StatusCode} {response.ReasonPhrase}.");
+            }
         }
         catch (TaskCanceledException)
         {
@@ -641,11 +656,11 @@ public partial class AdminWindow : Window
                 var shouldApply = _dialogs.Confirm(result.Message, "Apply App Update", useYesNo: true);
                 if (shouldApply)
                 {
-                    await _appUpdateService.ApplyPendingUpdateAndRestartAsync(result.InstallerUrl!);
+                    await _appUpdateService.ApplyPendingUpdateAndRestartAsync(result.InstallerUrl!, result.InstallerSha256);
                     return;
                 }
 
-                ShowAppUpdateBanner(NotificationLevel.Info, "Update is available — apply it when convenient.");
+                ShowAppUpdateBanner(NotificationLevel.Info, BuildAvailableUpdateBanner(result));
                 return;
             }
 
@@ -671,6 +686,20 @@ public partial class AdminWindow : Window
                 await _setLastUpdateCheckAt(DateTime.Now);
             RefreshLastCheckedLabel();
         }
+    }
+
+    private static string BuildAvailableUpdateBanner(AppUpdateCheckResult result)
+    {
+        if (string.IsNullOrWhiteSpace(result.ServerPatchCatalogLabel) && string.IsNullOrWhiteSpace(result.ReleaseNotes))
+            return "Update is available - apply it when convenient.";
+
+        var parts = new List<string> { "Update is available." };
+        if (!string.IsNullOrWhiteSpace(result.ServerPatchCatalogLabel))
+            parts.Add($"Incoming bundled patch catalog: {result.ServerPatchCatalogLabel}.");
+        if (!string.IsNullOrWhiteSpace(result.ReleaseNotes))
+            parts.Add($"Notes: {result.ReleaseNotes.Split('\n', 2)[0]}");
+
+        return string.Join(" ", parts);
     }
 
     private void BtnAddVersion_Click(object sender, RoutedEventArgs e)

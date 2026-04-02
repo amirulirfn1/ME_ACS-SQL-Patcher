@@ -88,6 +88,39 @@ public class PortableAppBootstrapServiceTests
         }
     }
 
+    [Fact]
+    public async Task EnsureReadyAsync_DoesNotOverwriteExistingSettingsFile()
+    {
+        var root = CreateTempDir();
+        try
+        {
+            var appPaths = TestAppPaths.Create(root);
+            Directory.CreateDirectory(Path.Combine(appPaths.BundledPatchesFolder, "7.0"));
+            await File.WriteAllTextAsync(Path.Combine(appPaths.BundledPatchesFolder, "versions.json"), """
+            {
+              "versions": [
+                { "id": "7.0", "name": "7.0", "upgradesTo": null, "order": 1 }
+              ],
+              "patches": []
+            }
+            """);
+
+            const string originalSettings = """{ "LastSqlServer": ".\\MAGSQL" }""";
+            Directory.CreateDirectory(Path.GetDirectoryName(appPaths.SettingsFilePath)!);
+            await File.WriteAllTextAsync(appPaths.SettingsFilePath, originalSettings);
+
+            var service = new PortableAppBootstrapService(appPaths);
+            await service.EnsureReadyAsync();
+
+            Assert.True(File.Exists(appPaths.SettingsFilePath));
+            Assert.Equal(originalSettings, await File.ReadAllTextAsync(appPaths.SettingsFilePath));
+        }
+        finally
+        {
+            TryDelete(root);
+        }
+    }
+
     private static string CreateTempDir()
     {
         var dir = Path.Combine(Path.GetTempPath(), "MagDbPatcherTests_" + Guid.NewGuid().ToString("N"));

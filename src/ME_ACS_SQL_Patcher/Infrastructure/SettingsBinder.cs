@@ -42,13 +42,31 @@ public sealed class SettingsBinder
             LastSqlServer = input.LastSqlServer,
             LastOutputFolder = input.LastOutputFolder,
             RecentBackupFiles = input.RecentBackupFiles.ToList(),
-            LastImportedPatchPack = input.LastImportedPatchPack,
+            LastImportedPatchPack = NormalizeLastImportedPatchPack(input.LastImportedPatchPack),
             AppUpdateFeedPath = string.IsNullOrWhiteSpace(input.AppUpdateFeedPath) ? null : input.AppUpdateFeedPath.Trim(),
             SqlAuthMode = input.SqlAuthMode,
             SqlUsername = input.SqlAuthMode == SqlAuthMode.SqlLogin ? input.SqlUsername : null,
             IsDarkTheme = input.Existing.IsDarkTheme,
             LastUpdateCheckAt = input.Existing.LastUpdateCheckAt
         };
+    }
+
+    private static string? NormalizeLastImportedPatchPack(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        var trimmed = value.Trim();
+        var lines = trimmed
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var summaryLine = lines.FirstOrDefault(line =>
+            line.StartsWith("Last imported pack:", StringComparison.OrdinalIgnoreCase));
+
+        if (summaryLine == null)
+            return trimmed;
+
+        var label = summaryLine["Last imported pack:".Length..].Trim().TrimEnd('.');
+        return label.Equals("none yet", StringComparison.OrdinalIgnoreCase) ? null : label;
     }
 }
 

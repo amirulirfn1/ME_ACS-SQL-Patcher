@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.IO;
 using System.Reflection;
+using System.Text.Json;
 
 namespace MagDbPatcher.Infrastructure;
 
@@ -28,7 +30,16 @@ public static class AppMetadata
         }
     }
 
-    public static string BuildLabel => $"Build {DisplayVersion}";
+    public static string BuildLabel
+    {
+        get
+        {
+            if (BuildDate == DateTime.MinValue)
+                return $"Build {DisplayVersion}";
+
+            return $"Build {DisplayVersion} ({BuildDate.AddHours(8):dd MMM yyyy HH:mm} MYT)";
+        }
+    }
 
     public static DateTime BuildDate
     {
@@ -39,7 +50,41 @@ public static class AppMetadata
                 .FirstOrDefault(a => a.Key == "BuildDate")?.Value;
             return DateTime.TryParse(raw, null, DateTimeStyles.RoundtripKind, out var dt)
                 ? dt
-                : DateTime.MinValue;
+                  : DateTime.MinValue;
         }
+    }
+
+    public static string? InstalledPatchCatalogVersion => ReadPatchCatalogMetadata()?.Version;
+
+    public static string? InstalledPatchCatalogLabel => ReadPatchCatalogMetadata()?.Label;
+
+    public static string? InstalledPatchCatalogSummary => ReadPatchCatalogMetadata()?.Summary;
+
+    public static string? InstalledPatchCatalogHash => ReadPatchCatalogMetadata()?.Hash;
+
+    private static InstalledPatchCatalogMetadata? ReadPatchCatalogMetadata()
+    {
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "patch-catalog.json");
+            if (!File.Exists(path))
+                return null;
+
+            return JsonSerializer.Deserialize<InstalledPatchCatalogMetadata>(
+                File.ReadAllText(path),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private sealed class InstalledPatchCatalogMetadata
+    {
+        public string? Version { get; init; }
+        public string? Label { get; init; }
+        public string? Summary { get; init; }
+        public string? Hash { get; init; }
     }
 }

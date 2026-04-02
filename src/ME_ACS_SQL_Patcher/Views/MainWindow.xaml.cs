@@ -46,6 +46,7 @@ public partial class MainWindow : Window
     private AppSettings _settings = new();
     private IVersionService? _versionService;
     private PatchPackImportCoordinator? _patchImportCoordinator;
+    private PatchCatalogDescriptor? _activePatchCatalog;
     private CancellationTokenSource? _runCancellation;
     private AdminWindow? _adminWindow;
     private string _bundledPatchesFolder = "";
@@ -107,6 +108,7 @@ public partial class MainWindow : Window
             _managedPatchesFolder = _patchStorageService.GetDefaultPatchesFolder();
             _settings = await _settingsService.LoadAsync();
             var initialPatchesFolder = await _patchStorageService.ResolvePatchesFolderAsync(_settings, _bundledPatchesFolder);
+            await RefreshManagedLibraryFromBundledIfSafeAsync(initialPatchesFolder);
 
             ApplySettingsToUi();
             _viewModel.StatusText = "Loading SQL Server suggestions...";
@@ -271,6 +273,7 @@ public partial class MainWindow : Window
         _versionService = new VersionService(normalized);
         await _versionService.LoadVersionsAsync();
         _runOrchestrator.UpdateVersionService(_versionService);
+        _activePatchCatalog = PatchCatalogDescriptorBuilder.FromVersionService(_versionService);
 
         _patchImportCoordinator = new PatchPackImportCoordinator(new PatchPackService(_appPaths.BackupsDirectory, _appPaths.ImportedPacksDirectory));
 
@@ -305,6 +308,12 @@ public partial class MainWindow : Window
     private async Task CheckForUpdatesOnStartupAsync()
     {
         var feedPath = GetStoredUpdateFeedPath();
+        if (string.IsNullOrWhiteSpace(feedPath))
+        {
+            Dispatcher.Invoke(SetUpdateFeedNotConfigured);
+            return;
+        }
+
         var reachable = await PingFeedServerAsync(feedPath);
         Dispatcher.Invoke(() => SetServerHealthDot(reachable, feedPath));
 
@@ -323,7 +332,7 @@ public partial class MainWindow : Window
             {
                 Dispatcher.Invoke(() =>
                     SetBanner(NotificationLevel.Info,
-                        "A newer build is available. Open Admin Tools → App Update to apply it."));
+                        "A newer build or bundled patch catalog is available. Open Admin Tools -> App Update to review it."));
             }
         }
         catch
@@ -336,8 +345,11 @@ public partial class MainWindow : Window
     {
         try
         {
+            if (AppUpdateFeedResolver.TryGetLocalDirectory(feedUrl, out var localDirectory))
+                return File.Exists(Path.Combine(localDirectory, "latest.json"));
+
             using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            var latestJsonUrl = $"{feedUrl.TrimEnd('/')}/latest.json";
+            var latestJsonUrl = AppUpdateFeedResolver.BuildLatestJsonUrl(feedUrl);
             var response = await client.GetAsync(latestJsonUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
             return response.IsSuccessStatusCode;
         }
@@ -358,10 +370,16 @@ public partial class MainWindow : Window
             : $"Update server unreachable: {feedUrl}";
     }
 
+    private void SetUpdateFeedNotConfigured()
+    {
+        ellipseServerHealth.Fill = (Brush)FindResource("TextMuted");
+        txtServerHealth.Text = "Feed not set";
+        ellipseServerHealth.ToolTip = "App update feed is not configured yet.";
+    }
+
     private string GetStoredUpdateFeedPath()
     {
-        var stored = (_settings.AppUpdateFeedPath ?? string.Empty).Trim();
-        return string.IsNullOrEmpty(stored) ? GetLocalFeedUrl() : stored;
+        return (_settings.AppUpdateFeedPath ?? string.Empty).Trim();
     }
 
     private static string GetLocalFeedUrl()
@@ -413,18 +431,35 @@ public partial class MainWindow : Window
 
     private void RefreshPatchVersionBadge()
     {
-        if (_versionService == null)
+        if (_versionService == null || _activePatchCatalog == null)
         {
             _viewModel.PatchVersionText = "";
             return;
         }
 
-        var latest = _versionService.GetAllVersions()
-            .OrderBy(v => v.Order)
-            .ThenBy(v => v.Id, StringComparer.OrdinalIgnoreCase)
-            .LastOrDefault();
+        _viewModel.PatchVersionText = $"Patch catalog { _activePatchCatalog.Label }";
+    }
 
-        _viewModel.PatchVersionText = latest == null ? "Patch unknown" : $"Patch {latest.Id}";
+    private async Task RefreshManagedLibraryFromBundledIfSafeAsync(string initialPatchesFolder)
+    {
+        if (!string.Equals(
+                Path.GetFullPath(initialPatchesFolder),
+                Path.GetFullPath(_managedPatchesFolder),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var refreshed = await _patchStorageService.RefreshManagedLibraryFromBundledIfSafeAsync(
+            initialPatchesFolder,
+            _bundledPatchesFolder,
+            hasImportedPack: !string.IsNullOrWhiteSpace(_settings.LastImportedPatchPack),
+            bundledCatalogHash: AppMetadata.InstalledPatchCatalogHash);
+
+        if (!refreshed)
+            return;
+
+        _sessionLog.WriteLine($"[{DateTime.Now:HH:mm:ss}] Managed patch library refreshed from bundled catalog.");
     }
 
     private void RefreshTargetVersions(string? preferredTargetId = null)
@@ -624,10 +659,10 @@ public partial class MainWindow : Window
         SetStepStatusChip(bdStep3Status, txtStep3Status, RunStateEvaluator.GetStepText(state.Step3State), state.Step3State);
         SetStepStatusChip(bdStep4Status, txtStep4Status, state.RunReady ? "Ready" : RunStateEvaluator.GetStepText(state.Step4State), state.Step4State);
 
-        SetStepCircle(bdStep1Circle, txtStep1Circle, state.Step1State);
-        SetStepCircle(bdStep2Circle, txtStep2Circle, state.Step2State);
-        SetStepCircle(bdStep3Circle, txtStep3Circle, state.Step3State);
-        SetStepCircle(bdStep4Circle, txtStep4Circle, state.Step4State);
+        SetStepCircle(bdStep1Circle, txtStep1Circle, txtStep1Label, state.Step1State);
+        SetStepCircle(bdStep2Circle, txtStep2Circle, txtStep2Label, state.Step2State);
+        SetStepCircle(bdStep3Circle, txtStep3Circle, txtStep3Label, state.Step3State);
+        SetStepCircle(bdStep4Circle, txtStep4Circle, txtStep4Label, state.Step4State);
 
         _viewModel.NextActionText = state.RunReady
             ? "Next: Review the run summary, then click Start Patch."
@@ -669,31 +704,35 @@ public partial class MainWindow : Window
         }
     }
 
-    private void SetStepCircle(Border circle, TextBlock label, RunStepState state)
+    private void SetStepCircle(Border circle, TextBlock numberLabel, TextBlock captionLabel, RunStepState state)
     {
+        Brush accentBrush;
         switch (state)
         {
             case RunStepState.Done:
                 circle.Background = (Brush)FindResource("SuccessSoft");
                 circle.BorderBrush = (Brush)FindResource("Success");
-                label.Foreground = (Brush)FindResource("Success");
+                accentBrush = (Brush)FindResource("Success");
                 break;
             case RunStepState.Ready:
                 circle.Background = (Brush)FindResource("InfoSoft");
                 circle.BorderBrush = (Brush)FindResource("Info");
-                label.Foreground = (Brush)FindResource("Info");
+                accentBrush = (Brush)FindResource("Info");
                 break;
             case RunStepState.NeedsAttention:
                 circle.Background = (Brush)FindResource("WarningSoft");
                 circle.BorderBrush = (Brush)FindResource("Warning");
-                label.Foreground = (Brush)FindResource("Warning");
+                accentBrush = (Brush)FindResource("Warning");
                 break;
             default:
                 circle.Background = (Brush)FindResource("BgSecondary");
                 circle.BorderBrush = (Brush)FindResource("BorderStrong");
-                label.Foreground = (Brush)FindResource("TextMuted");
+                accentBrush = (Brush)FindResource("TextMuted");
                 break;
         }
+
+        numberLabel.Foreground = accentBrush;
+        captionLabel.Foreground = accentBrush;
     }
 
     private void ApplyRunExecutionState(RunExecutionState state)

@@ -22,6 +22,105 @@ $iconPath     = Join-Path $repoRoot "src\ME_ACS_SQL_Patcher\Assets\me-acs-patche
 $version = @($proj.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1)[0].Version
 if ([string]::IsNullOrWhiteSpace($version)) { throw "Could not read version from $projectPath" }
 
+function Get-PatchCatalogMetadata([string]$patchesRoot) {
+    if (-not (Test-Path $patchesRoot)) {
+        throw "Patch catalog folder not found: $patchesRoot"
+    }
+
+    $normalizedRoot = [System.IO.Path]::GetFullPath($patchesRoot)
+    if (-not $normalizedRoot.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $normalizedRoot += [System.IO.Path]::DirectorySeparatorChar
+    }
+
+    $patchFiles = @(Get-ChildItem -Path $patchesRoot -Recurse -File | Sort-Object FullName)
+    $scriptCount = @($patchFiles | Where-Object { $_.Extension -ieq ".sql" }).Count
+    $versionCount = 0
+    $patchCount = 0
+    $latestVersion = "Unknown"
+
+    $versionsJsonPath = Join-Path $patchesRoot "versions.json"
+    if (Test-Path $versionsJsonPath) {
+        try {
+            $catalog = Get-Content $versionsJsonPath -Raw | ConvertFrom-Json
+            $versions = @($catalog.versions)
+            $patches = @($catalog.patches)
+            $versionCount = $versions.Count
+            $patchCount = $patches.Count
+
+            $orderedVersions = @($versions | Sort-Object `
+                @{ Expression = { if ($null -eq $_.order) { 0 } else { [int]$_.order } } }, `
+                @{ Expression = { [string]$_.id } })
+            if ($orderedVersions.Count -gt 0) {
+                $latestVersion = [string]$orderedVersions[-1].id
+            }
+        } catch {
+        }
+    }
+
+    if ($versionCount -eq 0) {
+        $versionCount = @(Get-ChildItem -Path $patchesRoot -Directory -ErrorAction SilentlyContinue).Count
+    }
+
+    if ([string]::IsNullOrWhiteSpace($latestVersion) -or $latestVersion -eq "Unknown") {
+        $latestVersion = [string](@(Get-ChildItem -Path $patchesRoot -Directory -ErrorAction SilentlyContinue |
+            Sort-Object Name |
+            Select-Object -Last 1 -ExpandProperty Name))
+        if ([string]::IsNullOrWhiteSpace($latestVersion)) {
+            $latestVersion = "Unknown"
+        }
+    }
+
+    $fingerprintLines = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($file in $patchFiles) {
+        $relative = $file.FullName.Substring($normalizedRoot.Length).Replace('\', '/').ToLowerInvariant()
+        $hash = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+        [void]$fingerprintLines.Add("$relative|$hash")
+    }
+
+    $fingerprintBytes = [System.Text.Encoding]::UTF8.GetBytes([string]::Join("`n", $fingerprintLines))
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $catalogHash = ([System.BitConverter]::ToString($sha256.ComputeHash($fingerprintBytes))).Replace("-", "").ToLowerInvariant()
+    } finally {
+        $sha256.Dispose()
+    }
+
+    $lastUpdatedUtc = if ($patchFiles.Count -gt 0) {
+        [DateTime]($patchFiles | Measure-Object -Property LastWriteTimeUtc -Maximum).Maximum
+    } else {
+        [DateTime]::UtcNow
+    }
+
+    $catalogLabel = "$latestVersion | $scriptCount scripts | $($lastUpdatedUtc.AddHours(8).ToString('dd MMM yyyy HH:mm')) MYT"
+    $catalogSummary = "$versionCount version(s), $patchCount patch link(s), $scriptCount script(s)"
+
+    return [pscustomobject][ordered]@{
+        Version = $latestVersion
+        Label = $catalogLabel
+        Summary = $catalogSummary
+        Hash = $catalogHash
+        ScriptCount = $scriptCount
+        VersionCount = $versionCount
+        PatchCount = $patchCount
+    }
+}
+
+function Get-ReleaseNotesText([string]$repoRoot, [string]$version, $patchCatalog) {
+    $manualReleaseNotesPath = Join-Path $repoRoot "release-notes.txt"
+    if (Test-Path $manualReleaseNotesPath) {
+        $manualNotes = (Get-Content $manualReleaseNotesPath -Raw).Trim()
+        if (-not [string]::IsNullOrWhiteSpace($manualNotes)) {
+            return $manualNotes
+        }
+    }
+
+    return @"
+Internal refresh for ME_ACS SQL Patcher $version.
+Bundled patch catalog: $($patchCatalog.Label)
+Catalog summary: $($patchCatalog.Summary)
+"@.Trim()
+}
+
 Write-Host ""
 Write-Host "Building ME_ACS SQL Patcher v$version"
 Write-Host "======================================"
@@ -73,6 +172,14 @@ if (Test-Path $outputDir) { Remove-Item -Recurse -Force $outputDir }
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 Copy-Item -Path (Join-Path $publishTemp "*") -Destination $outputDir -Recurse -Force
 
+$patchCatalog = Get-PatchCatalogMetadata (Join-Path $outputDir "patches")
+[ordered]@{
+    version = $patchCatalog.Version
+    label   = $patchCatalog.Label
+    summary = $patchCatalog.Summary
+    hash    = $patchCatalog.Hash
+} | ConvertTo-Json | Set-Content (Join-Path $outputDir "patch-catalog.json") -Encoding UTF8
+
 # --- DIST ---
 if (Test-Path $distDir) { Remove-Item -Recurse -Force $distDir }
 New-Item -ItemType Directory -Path $distDir | Out-Null
@@ -87,7 +194,8 @@ New-Item -ItemType Directory -Path $installerDir -Force | Out-Null
 
 $releaseNotesPath = Join-Path $repoRoot "artifacts\release-notes-$version.md"
 New-Item -ItemType Directory -Path (Split-Path -Parent $releaseNotesPath) -Force | Out-Null
-"# ME_ACS SQL Patcher $version`n- Installed-app release" | Set-Content $releaseNotesPath -Encoding UTF8
+$releaseNotesText = Get-ReleaseNotesText $repoRoot $version $patchCatalog
+"# ME_ACS SQL Patcher $version`n`n$releaseNotesText" | Set-Content $releaseNotesPath -Encoding UTF8
 
 dotnet tool run vpk -- pack `
     --packId    "ME_ACS_SQL_Patcher" `
@@ -148,7 +256,11 @@ Remove-Item -Recurse -Force $stagingDir
 Write-Host "Publishing to update feed..."
 New-Item -ItemType Directory -Path $feedDir -Force | Out-Null
 Get-ChildItem -Path $feedDir -File -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -ne '.gitkeep' } |
+    Where-Object {
+        $_.Name -ne '.gitkeep' -and
+        $_.Name -ne 'history.json' -and
+        $_.Name -notlike 'ME_ACS_SQL_Patcher-win-Setup-*.exe'
+    } |
     Remove-Item -Force
 
 $installerFiles = Get-ChildItem -Path $installerDir -File
@@ -163,11 +275,71 @@ $buildDate = if (Test-Path $buildDateFile) {
     [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
 }
 
-[ordered]@{
-    version       = $version
-    buildDate     = $buildDate
-    installerName = "ME_ACS_SQL_Patcher-win-Setup.exe"
-} | ConvertTo-Json | Set-Content (Join-Path $feedDir "latest.json") -Encoding UTF8
+$feedInstallerName = "ME_ACS_SQL_Patcher-win-Setup-$($buildDate.Replace(':','').Replace('-','')).exe"
+$feedInstallerPath = Join-Path $feedDir $feedInstallerName
+$defaultFeedInstallerPath = Join-Path $feedDir "ME_ACS_SQL_Patcher-win-Setup.exe"
+if (Test-Path $defaultFeedInstallerPath) {
+    Move-Item -Path $defaultFeedInstallerPath -Destination $feedInstallerPath -Force
+}
+
+$installerSha256 = (Get-FileHash -Path $feedInstallerPath -Algorithm SHA256).Hash.ToLowerInvariant()
+$latestEntry = [ordered]@{
+    version         = $version
+    buildDate       = $buildDate
+    installerName   = $feedInstallerName
+    installerSha256 = $installerSha256
+    patchCatalogVersion = $patchCatalog.Version
+    patchCatalogLabel   = $patchCatalog.Label
+    patchCatalogSummary = $patchCatalog.Summary
+    patchCatalogHash    = $patchCatalog.Hash
+    releaseNotes        = $releaseNotesText
+}
+$latestEntry | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $feedDir "latest.json") -Encoding UTF8
+
+$historyPath = Join-Path $feedDir "history.json"
+$history = @()
+if (Test-Path $historyPath) {
+    try {
+        $parsedHistory = Get-Content $historyPath -Raw | ConvertFrom-Json
+        if ($parsedHistory -is [System.Array]) {
+            $history = @($parsedHistory)
+        } elseif ($null -ne $parsedHistory) {
+            $history = @($parsedHistory)
+        }
+    } catch {
+        $history = @()
+    }
+}
+
+$history = @($latestEntry) + @($history | Where-Object { $_.installerName -ne $feedInstallerName })
+$history = @($history | Select-Object -First 3)
+$history | ConvertTo-Json -Depth 4 | Set-Content $historyPath -Encoding UTF8
+
+$keptInstallerNames = @($history | ForEach-Object { $_.installerName })
+Get-ChildItem -Path $feedDir -File -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.Name -like 'ME_ACS_SQL_Patcher-win-Setup-*.exe' -and
+        ($keptInstallerNames -notcontains $_.Name)
+    } |
+    Remove-Item -Force
+
+# --- START / RESTART SERVE.PY ---
+Write-Host "Starting update server..."
+$servePy = Join-Path $repoRoot "serve.py"
+# Kill any existing instance on the same port
+Get-CimInstance Win32_Process -Filter "name = 'pythonw.exe'" |
+    Where-Object { $_.CommandLine -like "*serve.py*" } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+Start-Sleep -Milliseconds 500
+Start-Process "pythonw.exe" -ArgumentList "`"$servePy`" 39000" -WorkingDirectory $repoRoot
+
+# Detect IP for display
+$localIP = try {
+    $s = [System.Net.Sockets.Socket]::new([System.Net.Sockets.AddressFamily]::InterNetwork,
+        [System.Net.Sockets.SocketType]::Dgram, [System.Net.Sockets.ProtocolType]::Udp)
+    $s.Connect("8.8.8.8", 80)
+    $s.LocalEndPoint.Address.ToString()
+} catch { "localhost" } finally { if ($s) { $s.Close() } }
 
 Write-Host ""
 Write-Host "======================================"
@@ -177,6 +349,9 @@ Write-Host ""
 Write-Host "  Handoff zip : $handoffZip"
 Write-Host "  Feed folder : $feedDir"
 Write-Host "  Build date  : $buildDate"
+Write-Host "  Patch catalog : $($patchCatalog.Label)"
+Write-Host "  Feed retention : last 3 setup installers"
 Write-Host ""
-Write-Host "  Start update server: python serve.py"
+Write-Host "  Update server : http://${localIP}:39000" -ForegroundColor Green
+Write-Host "  (server started automatically)"
 Write-Host ""

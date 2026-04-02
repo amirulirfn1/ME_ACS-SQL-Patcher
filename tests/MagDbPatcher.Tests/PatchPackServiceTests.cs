@@ -125,6 +125,50 @@ public class PatchPackServiceTests
         }
     }
 
+    [Fact]
+    public async Task ImportAsync_DoesNotSwapPatchesFolder_WhenArchivingFails()
+    {
+        var root = CreateTempDir();
+        try
+        {
+            var target = Path.Combine(root, "targetPatches");
+            var backups = Path.Combine(root, "backups");
+            var archivePathBlockedByFile = Path.Combine(root, "archives.blocked");
+            Directory.CreateDirectory(target);
+            await File.WriteAllTextAsync(Path.Combine(target, "sentinel_old.txt"), "old");
+            await File.WriteAllTextAsync(Path.Combine(target, "versions.json"), """{ "versions": [], "patches": [] }""");
+            await File.WriteAllTextAsync(archivePathBlockedByFile, "not a directory");
+
+            var zipPath = Path.Combine(root, "pack.zip");
+            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            {
+                await WriteTextEntryAsync(zip, "patch-pack.json", """
+                {
+                  "schemaVersion": 1,
+                  "packVersion": "20260204",
+                  "releasedAt": "2026-02-04T00:00:00Z",
+                  "minAppVersion": "1.0.0",
+                  "notes": "test",
+                  "contentRoot": "patches"
+                }
+                """);
+
+                await WriteTextEntryAsync(zip, "patches/versions.json", """{ "versions": [], "patches": [] }""");
+                await WriteTextEntryAsync(zip, "patches/sentinel_new.txt", "new");
+            }
+
+            var svc = new PatchPackService(backups, archivePathBlockedByFile);
+            await Assert.ThrowsAnyAsync<IOException>(() => svc.ImportAsync(zipPath, target));
+
+            Assert.True(File.Exists(Path.Combine(target, "sentinel_old.txt")));
+            Assert.False(File.Exists(Path.Combine(target, "sentinel_new.txt")));
+        }
+        finally
+        {
+            TryDelete(root);
+        }
+    }
+
     private static async Task WriteTextEntryAsync(ZipArchive zip, string path, string content)
     {
         var entry = zip.CreateEntry(path);

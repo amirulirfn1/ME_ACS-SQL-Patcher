@@ -282,7 +282,7 @@ public partial class MainWindow
             LastSqlServer = (cmbSqlServer.Text ?? "").Trim(),
             LastOutputFolder = string.IsNullOrWhiteSpace(_lastOutputPath) ? _settings.LastOutputFolder : Path.GetDirectoryName(_lastOutputPath),
             RecentBackupFiles = _viewModel.RecentBackupFiles.ToList(),
-            LastImportedPatchPack = string.IsNullOrWhiteSpace(txtLastImportedPack.Text) ? _settings.LastImportedPatchPack : txtLastImportedPack.Text,
+            LastImportedPatchPack = _settings.LastImportedPatchPack,
             AppUpdateFeedPath = _settings.AppUpdateFeedPath,
             SqlAuthMode = rbAuthSql.IsChecked == true ? SqlAuthMode.SqlLogin : SqlAuthMode.Windows,
             SqlUsername = txtSqlUsername.Text.Trim()

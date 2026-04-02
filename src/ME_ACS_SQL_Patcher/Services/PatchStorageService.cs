@@ -78,6 +78,46 @@ public class PatchStorageService : IPatchStorageService
         });
     }
 
+    public async Task<bool> RefreshManagedLibraryFromBundledIfSafeAsync(
+        string targetPatchesFolder,
+        string bundledPatchesFolder,
+        bool hasImportedPack,
+        string? bundledCatalogHash = null)
+    {
+        if (hasImportedPack)
+            return false;
+
+        Directory.CreateDirectory(targetPatchesFolder);
+
+        if (string.Equals(
+                Path.GetFullPath(targetPatchesFolder),
+                Path.GetFullPath(bundledPatchesFolder),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!Directory.Exists(bundledPatchesFolder))
+            return false;
+
+        if (!Directory.EnumerateFileSystemEntries(targetPatchesFolder).Any())
+        {
+            await EnsureSeededAsync(targetPatchesFolder, bundledPatchesFolder);
+            return true;
+        }
+
+        var targetHash = PatchCatalogDescriptorBuilder.ComputeFolderHash(targetPatchesFolder);
+        var expectedHash = string.IsNullOrWhiteSpace(bundledCatalogHash)
+            ? PatchCatalogDescriptorBuilder.ComputeFolderHash(bundledPatchesFolder)
+            : bundledCatalogHash.Trim();
+
+        if (string.Equals(targetHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        await ResetToBundledAsync(targetPatchesFolder, bundledPatchesFolder);
+        return true;
+    }
+
     private bool IsLegacyBundledFolder(string configuredFolder)
     {
         return string.Equals(configuredFolder, Path.GetFullPath(_appPaths.BundledPatchesFolder), StringComparison.OrdinalIgnoreCase) ||

@@ -74,6 +74,7 @@ public partial class MainWindow
     {
         var writableFolder = _patchStorageService.GetDefaultPatchesFolder();
         await _patchStorageService.ResetToBundledAsync(writableFolder, _bundledPatchesFolder);
+        _settings.LastImportedPatchPack = null;
         await SetPatchesFolderAsync(writableFolder, closeAdminWindow: false);
         return writableFolder;
     }
@@ -287,6 +288,7 @@ public partial class MainWindow
     {
         var writableFolder = _patchStorageService.GetDefaultPatchesFolder();
         await _patchStorageService.ResetToBundledAsync(writableFolder, _bundledPatchesFolder);
+        _settings.LastImportedPatchPack = null;
         await SetPatchesFolderAsync(writableFolder);
         await PersistSettingsAsync();
         SetBanner(NotificationLevel.Success, "Patch library reset to the managed app-data folder.");
